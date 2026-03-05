@@ -311,7 +311,7 @@ The implementation follows an incremental approach where each task builds on pre
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 11. Government schemes navigator implementation
-  - [ ] 11.1 Create scheme service and data models
+  - [x] 11.1 Create scheme service and data models
     - Define Scheme, EligibilityResult, and ApplicationStep interfaces
     - Implement SchemeService to fetch scheme data from government APIs
     - Create DynamoDB schema for scheme storage
@@ -323,7 +323,7 @@ The implementation follows an incremental approach where each task builds on pre
     - **Property 4: Local Data Persistence** - For any scheme data, storing locally should make it retrievable offline
     - _Validates: Requirements 2.1, 2.7_
   
-  - [ ] 11.3 Implement eligibility checker
+  - [x] 11.3 Implement eligibility checker
     - Create EligibilityChecker analyzing user profile against criteria
     - Add logic to check location, farm size, crop type, and income
     - Implement consistent eligibility determination
@@ -336,7 +336,7 @@ The implementation follows an incremental approach where each task builds on pre
     - **Property 9: Ineligibility Explanation** - For any ineligible user, provide reasons and alternatives
     - _Validates: Requirements 2.2, 2.3, 2.4_
   
-  - [ ] 11.5 Implement application guide and deadline alerts
+  - [x] 11.5 Implement application guide and deadline alerts
     - Create ApplicationGuide with step-by-step instructions
     - Add required documents list for each scheme
     - Implement deadline tracking and reminder scheduling
@@ -346,7 +346,7 @@ The implementation follows an incremental approach where each task builds on pre
     - **Property 10: Deadline Alert Scheduling** - For any scheme deadline within 30 days, schedule reminders
     - _Validates: Requirements 2.6_
   
-  - [ ] 11.7 Create scheme API endpoints and mobile UI
+  - [x] 11.7 Create scheme API endpoints and mobile UI
     - Implement Lambda functions for scheme retrieval and eligibility checking
     - Build React Native components for scheme browsing and filtering
     - Add scheme detail view with application guidance
