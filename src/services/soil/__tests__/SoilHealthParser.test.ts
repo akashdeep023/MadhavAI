@@ -31,18 +31,18 @@ describe('SoilHealthParser', () => {
       const result = soilHealthParser.parseFromText(text, userId);
 
       expect(result).not.toBeNull();
-      expect(result?.userId).toBe(userId);
-      expect(result?.labName).toBe('Government Soil Testing Lab');
-      expect(result?.sampleId).toBe('SHC-2024-001');
-      expect(result?.parameters.nitrogen).toBe(280);
-      expect(result?.parameters.phosphorus).toBe(25);
-      expect(result?.parameters.potassium).toBe(320);
-      expect(result?.parameters.pH).toBe(6.5);
-      expect(result?.parameters.electricalConductivity).toBe(0.8);
-      expect(result?.parameters.organicCarbon).toBe(0.75);
-      expect(result?.parameters.zinc).toBe(1.2);
-      expect(result?.parameters.iron).toBe(8.5);
-      expect(result?.soilType).toBe('loamy');
+      expect(result!.userId).toBe(userId);
+      expect(result!.labName).toBe('Government Soil Testing Lab');
+      expect(result!.sampleId).toBe('SHC-2024-001');
+      expect(result!.parameters!.nitrogen).toBe(280);
+      expect(result!.parameters!.phosphorus).toBe(25);
+      expect(result!.parameters!.potassium).toBe(320);
+      expect(result!.parameters!.pH).toBe(6.5);
+      expect(result!.parameters!.electricalConductivity).toBe(0.8);
+      expect(result!.parameters!.organicCarbon).toBe(0.75);
+      expect(result!.parameters!.zinc).toBe(1.2);
+      expect(result!.parameters!.iron).toBe(8.5);
+      expect(result!.soilType).toBe('loamy');
     });
 
     it('should parse with minimal required data (NPK)', () => {
@@ -55,9 +55,9 @@ describe('SoilHealthParser', () => {
       const result = soilHealthParser.parseFromText(text, userId);
 
       expect(result).not.toBeNull();
-      expect(result?.parameters.nitrogen).toBe(200);
-      expect(result?.parameters.phosphorus).toBe(15);
-      expect(result?.parameters.potassium).toBe(250);
+      expect(result!.parameters!.nitrogen).toBe(200);
+      expect(result!.parameters!.phosphorus).toBe(15);
+      expect(result!.parameters!.potassium).toBe(250);
     });
 
     it('should return null when insufficient data', () => {
@@ -79,9 +79,9 @@ describe('SoilHealthParser', () => {
       const result = soilHealthParser.parseFromText(text, userId);
 
       expect(result).not.toBeNull();
-      expect(result?.testDate.getDate()).toBe(25);
-      expect(result?.testDate.getMonth()).toBe(11); // December is month 11
-      expect(result?.testDate.getFullYear()).toBe(2023);
+      expect(result!.testDate!.getDate()).toBe(25);
+      expect(result!.testDate!.getMonth()).toBe(11); // December is month 11
+      expect(result!.testDate!.getFullYear()).toBe(2023);
     });
 
     it('should detect different soil types', () => {
@@ -127,19 +127,19 @@ describe('SoilHealthParser', () => {
       const result = soilHealthParser.parseFromJSON(jsonData, userId);
 
       expect(result).not.toBeNull();
-      expect(result?.userId).toBe(userId);
-      expect(result?.labName).toBe('Soil Testing Lab');
-      expect(result?.sampleId).toBe('SHC-2024-001');
-      expect(result?.location?.latitude).toBe(28.6139);
-      expect(result?.location?.longitude).toBe(77.209);
-      expect(result?.location?.fieldName).toBe('North Field');
-      expect(result?.parameters.nitrogen).toBe(280);
-      expect(result?.parameters.phosphorus).toBe(25);
-      expect(result?.parameters.potassium).toBe(320);
-      expect(result?.parameters.pH).toBe(6.5);
-      expect(result?.soilType).toBe('loamy');
-      expect(result?.texture).toBe('medium');
-      expect(result?.color).toBe('brown');
+      expect(result!.userId).toBe(userId);
+      expect(result!.labName).toBe('Soil Testing Lab');
+      expect(result!.sampleId).toBe('SHC-2024-001');
+      expect(result!.location!.latitude).toBe(28.6139);
+      expect(result!.location!.longitude).toBe(77.209);
+      expect(result!.location!.fieldName).toBe('North Field');
+      expect(result!.parameters!.nitrogen).toBe(280);
+      expect(result!.parameters!.phosphorus).toBe(25);
+      expect(result!.parameters!.potassium).toBe(320);
+      expect(result!.parameters!.pH).toBe(6.5);
+      expect(result!.soilType).toBe('loamy');
+      expect(result!.texture).toBe('medium');
+      expect(result!.color).toBe('brown');
     });
 
     it('should handle missing optional fields', () => {
@@ -155,9 +155,9 @@ describe('SoilHealthParser', () => {
       const result = soilHealthParser.parseFromJSON(jsonData, userId);
 
       expect(result).not.toBeNull();
-      expect(result?.labName).toBe('Unknown Lab');
-      expect(result?.parameters.nitrogen).toBe(200);
-      expect(result?.soilType).toBe('loamy');
+      expect(result!.labName).toBe('Unknown Lab');
+      expect(result!.parameters!.nitrogen).toBe(200);
+      expect(result!.soilType).toBe('loamy');
     });
 
     it('should parse string numbers correctly', () => {
@@ -173,9 +173,9 @@ describe('SoilHealthParser', () => {
       const result = soilHealthParser.parseFromJSON(jsonData, userId);
 
       expect(result).not.toBeNull();
-      expect(result?.parameters.nitrogen).toBe(280);
-      expect(result?.parameters.phosphorus).toBe(25);
-      expect(result?.parameters.pH).toBe(6.5);
+      expect(result!.parameters!.nitrogen).toBe(280);
+      expect(result!.parameters!.phosphorus).toBe(25);
+      expect(result!.parameters!.pH).toBe(6.5);
     });
 
     it('should handle null and undefined values', () => {
@@ -192,11 +192,11 @@ describe('SoilHealthParser', () => {
       const result = soilHealthParser.parseFromJSON(jsonData, userId);
 
       expect(result).not.toBeNull();
-      expect(result?.parameters.nitrogen).toBe(200);
-      expect(result?.parameters.phosphorus).toBe(0);
-      expect(result?.parameters.potassium).toBe(250);
-      expect(result?.parameters.pH).toBe(7.0);
-      expect(result?.parameters.zinc).toBeUndefined();
+      expect(result!.parameters!.nitrogen).toBe(200);
+      expect(result!.parameters!.phosphorus).toBe(0);
+      expect(result!.parameters!.potassium).toBe(250);
+      expect(result!.parameters!.pH).toBe(7.0);
+      expect(result!.parameters!.zinc).toBeUndefined();
     });
   });
 });

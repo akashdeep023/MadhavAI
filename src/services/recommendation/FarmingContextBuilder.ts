@@ -50,7 +50,7 @@ export class FarmingContextBuilder {
    * Categorize farm size
    */
   private categorizeFarmSize(context: FarmingContext): 'small' | 'medium' | 'large' {
-    const farmSize = context.userProfile.farmData?.size || 0;
+    const farmSize = context.userProfile.farmSize || 0;
 
     if (farmSize < 2) {
       return 'small'; // < 2 hectares
@@ -131,21 +131,21 @@ export class FarmingContextBuilder {
       return 'medium'; // Unknown = medium risk
     }
 
-    const { forecast } = context.weatherForecast;
+    const { daily } = context.weatherForecast;
     let riskScore = 0;
 
     // Check for extreme temperatures
-    const hasExtremeTemp = forecast.some(
+    const hasExtremeTemp = daily.some(
       (day) => day.temperature.max > 40 || day.temperature.min < 5
     );
     if (hasExtremeTemp) riskScore += 2;
 
     // Check for heavy rainfall
-    const hasHeavyRain = forecast.some((day) => day.precipitation.amount > 50);
+    const hasHeavyRain = daily.some((day) => day.precipitation.amount > 50);
     if (hasHeavyRain) riskScore += 2;
 
     // Check for high wind
-    const hasHighWind = forecast.some((day) => day.wind.speed > 40);
+    const hasHighWind = daily.some((day) => day.wind.speed > 40);
     if (hasHighWind) riskScore += 1;
 
     if (riskScore >= 4) return 'high';
@@ -159,19 +159,19 @@ export class FarmingContextBuilder {
   private assessMarketOpportunity(
     context: FarmingContext
   ): 'favorable' | 'neutral' | 'unfavorable' | 'unknown' {
-    if (!context.marketData) {
+    if (!context.marketData || !context.marketData.trends || context.marketData.trends.length === 0) {
       return 'unknown';
     }
 
-    const { trend } = context.marketData;
+    const trend = context.marketData.trends[0];
 
     // Favorable if prices are rising or stable with high prices
-    if (trend.direction === 'rising') {
+    if (trend.trend === 'rising') {
       return 'favorable';
     }
 
     // Unfavorable if prices are falling
-    if (trend.direction === 'falling') {
+    if (trend.trend === 'falling') {
       return 'unfavorable';
     }
 
@@ -192,7 +192,9 @@ export class FarmingContextBuilder {
     if (context.userProfile.location) score += 15;
 
     // Farm data (15 points)
-    if (context.userProfile.farmData) score += 15;
+    if (context.userProfile.farmSize && context.userProfile.primaryCrops && context.userProfile.primaryCrops.length > 0) {
+      score += 15;
+    }
 
     // Soil data (20 points)
     if (context.soilData) score += 20;
@@ -216,11 +218,11 @@ export class FarmingContextBuilder {
       recommendations.push('Upload your soil health card for better crop recommendations');
     }
 
-    if (!context.userProfile.location) {
+    if (!context.userProfile.location || !context.userProfile.location.state || !context.userProfile.location.district) {
       recommendations.push('Add your farm location for weather and market insights');
     }
 
-    if (!context.userProfile.farmData) {
+    if (!context.userProfile.farmSize || !context.userProfile.primaryCrops || context.userProfile.primaryCrops.length === 0) {
       recommendations.push('Complete your farm profile with size and current crops');
     }
 

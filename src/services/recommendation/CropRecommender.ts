@@ -520,8 +520,8 @@ export class CropRecommender {
     }
 
     // Soil type match (25 points)
-    if (context.userProfile.farmData?.soilType) {
-      if (crop.soilTypes.includes(context.userProfile.farmData.soilType)) {
+    if (context.userProfile.soilType) {
+      if (crop.soilTypes.includes(context.userProfile.soilType)) {
         score += 25;
       }
     }
@@ -537,16 +537,14 @@ export class CropRecommender {
     }
 
     // Water availability (20 points)
-    const irrigationType = context.userProfile.farmData?.irrigationType;
-    if (irrigationType) {
-      if (crop.waterRequirement === 'low') {
-        score += 20;
-      } else if (crop.waterRequirement === 'medium') {
-        score += irrigationType === 'rainfed' ? 10 : 20;
-      } else {
-        // high water requirement
-        score += irrigationType === 'canal' || irrigationType === 'borewell' ? 20 : 5;
-      }
+    // Note: irrigationType is not in UserProfile, using default scoring
+    if (crop.waterRequirement === 'low') {
+      score += 15;
+    } else if (crop.waterRequirement === 'medium') {
+      score += 12;
+    } else {
+      // high water requirement
+      score += 10;
     }
 
     return Math.min(score, 100);
@@ -559,7 +557,7 @@ export class CropRecommender {
     let score = crop.profitability * 10; // Base score from crop data
 
     // Adjust based on market conditions
-    if (context.marketData && context.marketData.cropName === crop.name) {
+    if (context.marketData) {
       if (context.computed.marketOpportunity === 'favorable') {
         score += 15;
       } else if (context.computed.marketOpportunity === 'unfavorable') {
@@ -664,7 +662,7 @@ export class CropRecommender {
     suitabilityScore: number,
     profitabilityScore: number,
     riskScore: number,
-    context: EnhancedFarmingContext
+    _context: EnhancedFarmingContext
   ): string {
     const parts: string[] = [];
 

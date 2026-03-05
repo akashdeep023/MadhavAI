@@ -100,7 +100,16 @@ describe('FarmingContextBuilder', () => {
 
   const mockMarketData: MarketData = {
     prices: [],
-    trends: [],
+    trends: [
+      {
+        crop: 'Rice',
+        prices: [],
+        trend: 'rising',
+        changePercent: 10,
+        average: 2000,
+        period: 30,
+      },
+    ],
     mandis: [],
     lastUpdated: new Date(),
     source: 'test',
@@ -491,7 +500,7 @@ describe('FarmingContextBuilder', () => {
     });
 
     it('should recommend completing farm profile when missing', async () => {
-      const profileWithoutFarmData = { ...mockProfile, farmData: undefined };
+      const profileWithoutFarmData = { ...mockProfile, farmSize: 0, primaryCrops: [] };
       const baseContext: FarmingContext = {
         userProfile: profileWithoutFarmData,
         soilData: mockSoilData,

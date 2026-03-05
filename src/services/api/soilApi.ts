@@ -33,8 +33,8 @@ class SoilApi {
 
   constructor() {
     this.client = axios.create({
-      baseURL: config.apiUrl,
-      timeout: 10000,
+      baseURL: config.API_BASE_URL,
+      timeout: config.API_TIMEOUT,
       headers: {
         'Content-Type': 'application/json',
       },

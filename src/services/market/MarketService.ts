@@ -18,7 +18,7 @@ const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const UPDATE_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 class MarketService {
-  private updateTimer: NodeJS.Timeout | null = null;
+  private updateTimer: ReturnType<typeof setInterval> | null = null;
 
   /**
    * Get market prices for crops near user location
@@ -161,7 +161,7 @@ class MarketService {
     // Mock implementation - in production, this would call actual government/market APIs
     // like AGMARKNET, eNAM, etc.
     
-    await new Promise((resolve) => setTimeout(resolve, 100)); // Simulate API call
+    await new Promise<void>((resolve) => setTimeout(resolve, 100)); // Simulate API call
 
     const mockData: MarketData = {
       prices: this.generateMockPrices(latitude, longitude),
@@ -258,22 +258,22 @@ class MarketService {
   ): Promise<CachedMarketData | null> {
     try {
       const cacheKey = this.getCacheKey(latitude, longitude);
-      const cached = await encryptedStorage.getItem(cacheKey);
+      const cached = await encryptedStorage.getItem<CachedMarketData>(cacheKey);
 
       if (!cached) {
         logger.debug('No cached market data found');
         return null;
       }
 
-      const data: CachedMarketData = JSON.parse(cached);
-      data.timestamp = new Date(data.timestamp);
-      data.data.lastUpdated = new Date(data.data.lastUpdated);
-      data.data.prices = data.data.prices.map((p) => ({
+      // Convert date strings back to Date objects
+      cached.timestamp = new Date(cached.timestamp);
+      cached.data.lastUpdated = new Date(cached.data.lastUpdated);
+      cached.data.prices = cached.data.prices.map((p) => ({
         ...p,
         date: new Date(p.date),
       }));
 
-      return data;
+      return cached;
     } catch (error) {
       logger.error('Error reading cached market data', error);
       return null;
@@ -295,7 +295,7 @@ class MarketService {
         timestamp: new Date(),
       };
 
-      await encryptedStorage.setItem(cacheKey, JSON.stringify(cached));
+      await encryptedStorage.setItem(cacheKey, cached);
     } catch (error) {
       logger.error('Error caching market data', error);
     }

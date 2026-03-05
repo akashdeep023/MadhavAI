@@ -20,7 +20,7 @@ class SoilHealthStorage {
       logger.info(`Saving soil health record ${soilData.id}`);
 
       const key = this.getStorageKey(soilData.id);
-      await encryptedStorage.setItem(key, JSON.stringify(soilData));
+      await encryptedStorage.setItem(key, soilData);
 
       // Update index
       await this.updateIndex(soilData.id, soilData.userId);
@@ -40,21 +40,19 @@ class SoilHealthStorage {
       logger.debug(`Retrieving soil health record ${id}`);
 
       const key = this.getStorageKey(id);
-      const data = await encryptedStorage.getItem(key);
+      const data = await encryptedStorage.getItem<SoilHealthData>(key);
 
       if (!data) {
         logger.debug('Soil health record not found');
         return null;
       }
 
-      const soilData = JSON.parse(data) as SoilHealthData;
-
       // Convert date strings back to Date objects
-      soilData.testDate = new Date(soilData.testDate);
-      soilData.createdAt = new Date(soilData.createdAt);
-      soilData.updatedAt = new Date(soilData.updatedAt);
+      data.testDate = new Date(data.testDate);
+      data.createdAt = new Date(data.createdAt);
+      data.updatedAt = new Date(data.updatedAt);
 
-      return soilData;
+      return data;
     } catch (error) {
       logger.error('Error retrieving soil health record', error);
       return null;
@@ -168,8 +166,8 @@ class SoilHealthStorage {
    */
   private async getIndex(): Promise<Record<string, string[]>> {
     try {
-      const data = await encryptedStorage.getItem(this.INDEX_KEY);
-      return data ? JSON.parse(data) : {};
+      const data = await encryptedStorage.getItem<Record<string, string[]>>(this.INDEX_KEY);
+      return data || {};
     } catch (error) {
       logger.error('Error retrieving soil health index', error);
       return {};
@@ -191,7 +189,7 @@ class SoilHealthStorage {
         index[userId].push(id);
       }
 
-      await encryptedStorage.setItem(this.INDEX_KEY, JSON.stringify(index));
+      await encryptedStorage.setItem(this.INDEX_KEY, index);
     } catch (error) {
       logger.error('Error updating soil health index', error);
       throw error;
@@ -212,7 +210,7 @@ class SoilHealthStorage {
           delete index[userId];
         }
 
-        await encryptedStorage.setItem(this.INDEX_KEY, JSON.stringify(index));
+        await encryptedStorage.setItem(this.INDEX_KEY, index);
       }
     } catch (error) {
       logger.error('Error removing from soil health index', error);

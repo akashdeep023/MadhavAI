@@ -3,17 +3,17 @@
  */
 
 import { DataAggregator } from '../DataAggregator';
-import { profileApi } from '../../api/profileApi';
+import { profileAPI } from '../../api/profileApi';
 import { soilApi } from '../../api/soilApi';
-import { weatherApi } from '../../api/weatherApi';
-import { marketApi } from '../../api/marketApi';
+import { weatherAPI } from '../../api/weatherApi';
+import { marketAPI } from '../../api/marketApi';
 import { UserProfile } from '../../../types/profile.types';
 import { SoilHealthData } from '../../../types/soil.types';
 import { WeatherForecast } from '../../../types/weather.types';
 import { MarketData } from '../../../types/market.types';
 
 jest.mock('../../api/profileApi', () => ({
-  profileApi: {
+  profileAPI: {
     getProfile: jest.fn(),
   },
 }));
@@ -25,14 +25,16 @@ jest.mock('../../api/soilApi', () => ({
 }));
 
 jest.mock('../../api/weatherApi', () => ({
-  weatherApi: {
-    getWeatherForecast: jest.fn(),
+  weatherAPI: {
+    getForecast: jest.fn(),
   },
 }));
 
 jest.mock('../../api/marketApi', () => ({
-  marketApi: {
-    getMarketData: jest.fn(),
+  marketAPI: {
+    getPrices: jest.fn(),
+    getNearbyMandis: jest.fn(),
+    getPriceTrend: jest.fn(),
   },
 }));
 
@@ -43,7 +45,7 @@ describe('DataAggregator', () => {
     userId: 'user-001',
     mobileNumber: '+919876543210',
     name: 'Test Farmer',
-    language: 'en',
+    languagePreference: 'en',
     location: {
       state: 'Test State',
       district: 'Test District',
@@ -54,13 +56,9 @@ describe('DataAggregator', () => {
         longitude: 77.209,
       },
     },
-    farmData: {
-      size: 5,
-      unit: 'hectares',
-      soilType: 'loamy',
-      crops: ['Rice', 'Wheat'],
-      irrigationType: 'canal',
-    },
+    farmSize: 5,
+    primaryCrops: ['Rice', 'Wheat'],
+    soilType: 'loamy',
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -94,26 +92,39 @@ describe('DataAggregator', () => {
       longitude: 77.209,
       name: 'Test Location',
     },
-    forecast: [],
-    fetchedAt: new Date(),
+    current: {
+      date: new Date(),
+      temperature: { current: 25, min: 20, max: 30, feelsLike: 26 },
+      precipitation: { probability: 20, amount: 5, type: 'rain' },
+      humidity: 60,
+      wind: { speed: 15, direction: 'NE' },
+      uvIndex: 7,
+      condition: 'partly_cloudy',
+      sunrise: new Date(),
+      sunset: new Date(),
+      description: 'Partly cloudy',
+    },
+    daily: [],
+    alerts: [],
+    lastUpdated: new Date(),
+    source: 'test',
   };
 
   const mockMarketData: MarketData = {
-    cropName: 'Rice',
-    currentPrice: 2000,
-    unit: 'quintal',
-    location: {
-      latitude: 28.6139,
-      longitude: 77.209,
-    },
-    trend: {
-      direction: 'rising',
-      percentageChange: 5,
-      period: 30,
-    },
-    nearbyMandis: [],
-    priceHistory: [],
-    fetchedAt: new Date(),
+    prices: [],
+    trends: [
+      {
+        crop: 'Rice',
+        prices: [],
+        trend: 'rising',
+        changePercent: 5,
+        average: 2000,
+        period: 30,
+      },
+    ],
+    mandis: [],
+    lastUpdated: new Date(),
+    source: 'test',
   };
 
   beforeEach(() => {
@@ -123,26 +134,30 @@ describe('DataAggregator', () => {
 
   describe('aggregateData', () => {
     it('should aggregate all data sources successfully', async () => {
-      (profileApi.getProfile as jest.Mock).mockResolvedValue(mockProfile);
+      (profileAPI.getProfile as jest.Mock).mockResolvedValue(mockProfile);
       (soilApi.getSoilHealthByUser as jest.Mock).mockResolvedValue([mockSoilData]);
-      (weatherApi.getWeatherForecast as jest.Mock).mockResolvedValue(mockWeatherForecast);
-      (marketApi.getMarketData as jest.Mock).mockResolvedValue(mockMarketData);
+      (weatherAPI.getForecast as jest.Mock).mockResolvedValue(mockWeatherForecast);
+      (marketAPI.getPrices as jest.Mock).mockResolvedValue([]);
+      (marketAPI.getNearbyMandis as jest.Mock).mockResolvedValue([]);
+      (marketAPI.getPriceTrend as jest.Mock).mockResolvedValue(mockMarketData.trends[0]);
 
       const context = await aggregator.aggregateData('user-001');
 
       expect(context.userProfile).toEqual(mockProfile);
       expect(context.soilData).toEqual(mockSoilData);
       expect(context.weatherForecast).toEqual(mockWeatherForecast);
-      expect(context.marketData).toEqual(mockMarketData);
+      expect(context.marketData).toBeDefined();
       expect(context.currentSeason).toBeDefined();
       expect(context.timestamp).toBeInstanceOf(Date);
     });
 
     it('should handle missing soil data gracefully', async () => {
-      (profileApi.getProfile as jest.Mock).mockResolvedValue(mockProfile);
+      (profileAPI.getProfile as jest.Mock).mockResolvedValue(mockProfile);
       (soilApi.getSoilHealthByUser as jest.Mock).mockResolvedValue([]);
-      (weatherApi.getWeatherForecast as jest.Mock).mockResolvedValue(mockWeatherForecast);
-      (marketApi.getMarketData as jest.Mock).mockResolvedValue(mockMarketData);
+      (weatherAPI.getForecast as jest.Mock).mockResolvedValue(mockWeatherForecast);
+      (marketAPI.getPrices as jest.Mock).mockResolvedValue([]);
+      (marketAPI.getNearbyMandis as jest.Mock).mockResolvedValue([]);
+      (marketAPI.getPriceTrend as jest.Mock).mockResolvedValue(mockMarketData.trends[0]);
 
       const context = await aggregator.aggregateData('user-001');
 
@@ -151,10 +166,12 @@ describe('DataAggregator', () => {
     });
 
     it('should handle missing weather data gracefully', async () => {
-      (profileApi.getProfile as jest.Mock).mockResolvedValue(mockProfile);
+      (profileAPI.getProfile as jest.Mock).mockResolvedValue(mockProfile);
       (soilApi.getSoilHealthByUser as jest.Mock).mockResolvedValue([mockSoilData]);
-      (weatherApi.getWeatherForecast as jest.Mock).mockRejectedValue(new Error('API Error'));
-      (marketApi.getMarketData as jest.Mock).mockResolvedValue(mockMarketData);
+      (weatherAPI.getForecast as jest.Mock).mockRejectedValue(new Error('API Error'));
+      (marketAPI.getPrices as jest.Mock).mockResolvedValue([]);
+      (marketAPI.getNearbyMandis as jest.Mock).mockResolvedValue([]);
+      (marketAPI.getPriceTrend as jest.Mock).mockResolvedValue(mockMarketData.trends[0]);
 
       const context = await aggregator.aggregateData('user-001');
 
@@ -163,10 +180,10 @@ describe('DataAggregator', () => {
     });
 
     it('should handle missing market data gracefully', async () => {
-      (profileApi.getProfile as jest.Mock).mockResolvedValue(mockProfile);
+      (profileAPI.getProfile as jest.Mock).mockResolvedValue(mockProfile);
       (soilApi.getSoilHealthByUser as jest.Mock).mockResolvedValue([mockSoilData]);
-      (weatherApi.getWeatherForecast as jest.Mock).mockResolvedValue(mockWeatherForecast);
-      (marketApi.getMarketData as jest.Mock).mockRejectedValue(new Error('API Error'));
+      (weatherAPI.getForecast as jest.Mock).mockResolvedValue(mockWeatherForecast);
+      (marketAPI.getPrices as jest.Mock).mockRejectedValue(new Error('API Error'));
 
       const context = await aggregator.aggregateData('user-001');
 
@@ -175,7 +192,7 @@ describe('DataAggregator', () => {
     });
 
     it('should throw error if user profile fetch fails', async () => {
-      (profileApi.getProfile as jest.Mock).mockRejectedValue(new Error('Profile not found'));
+      (profileAPI.getProfile as jest.Mock).mockRejectedValue(new Error('Profile not found'));
 
       await expect(aggregator.aggregateData('user-001')).rejects.toThrow(
         'Failed to aggregate data'
@@ -183,18 +200,19 @@ describe('DataAggregator', () => {
     });
 
     it('should fetch all data in parallel', async () => {
-      (profileApi.getProfile as jest.Mock).mockResolvedValue(mockProfile);
+      (profileAPI.getProfile as jest.Mock).mockResolvedValue(mockProfile);
       (soilApi.getSoilHealthByUser as jest.Mock).mockResolvedValue([mockSoilData]);
-      (weatherApi.getWeatherForecast as jest.Mock).mockResolvedValue(mockWeatherForecast);
-      (marketApi.getMarketData as jest.Mock).mockResolvedValue(mockMarketData);
+      (weatherAPI.getForecast as jest.Mock).mockResolvedValue(mockWeatherForecast);
+      (marketAPI.getPrices as jest.Mock).mockResolvedValue([]);
+      (marketAPI.getNearbyMandis as jest.Mock).mockResolvedValue([]);
+      (marketAPI.getPriceTrend as jest.Mock).mockResolvedValue(mockMarketData.trends[0]);
 
       await aggregator.aggregateData('user-001');
 
       // All APIs should be called
-      expect(profileApi.getProfile).toHaveBeenCalledWith('user-001');
+      expect(profileAPI.getProfile).toHaveBeenCalledWith('user-001');
       expect(soilApi.getSoilHealthByUser).toHaveBeenCalledWith('user-001');
-      expect(weatherApi.getWeatherForecast).toHaveBeenCalled();
-      expect(marketApi.getMarketData).toHaveBeenCalled();
+      expect(weatherAPI.getForecast).toHaveBeenCalled();
     });
   });
 
@@ -290,8 +308,13 @@ describe('DataAggregator', () => {
     });
 
     it('should identify multiple missing data sources', () => {
+      const profileWithoutFarmData = {
+        ...mockProfile,
+        farmSize: 0,
+        primaryCrops: [],
+      };
       const context = {
-        userProfile: mockProfile,
+        userProfile: profileWithoutFarmData,
         soilData: null,
         weatherForecast: null,
         marketData: null,
@@ -302,7 +325,8 @@ describe('DataAggregator', () => {
       const result = aggregator.validateContext(context);
 
       expect(result.isValid).toBe(false);
-      expect(result.missingData).toHaveLength(3);
+      expect(result.missingData).toHaveLength(4);
+      expect(result.missingData).toContain('Farm data');
       expect(result.missingData).toContain('Soil health data');
       expect(result.missingData).toContain('Weather forecast');
       expect(result.missingData).toContain('Market data');

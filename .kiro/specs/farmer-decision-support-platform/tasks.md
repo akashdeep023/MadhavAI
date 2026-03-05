@@ -307,7 +307,7 @@ The implementation follows an incremental approach where each task builds on pre
     - _Requirements: 7.1, 3.1, 4.1_
 
 
-- [ ] 10. Checkpoint - Core recommendation engine validation
+- [x] 10. Checkpoint - Core recommendation engine validation
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 11. Government schemes navigator implementation

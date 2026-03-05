@@ -14,7 +14,7 @@ describe('FertilizerRecommender', () => {
     userId: 'user-001',
     mobileNumber: '+919876543210',
     name: 'Test Farmer',
-    language: 'en',
+    languagePreference: 'en',
     location: {
       state: 'Test State',
       district: 'Test District',
@@ -25,13 +25,9 @@ describe('FertilizerRecommender', () => {
         longitude: 77.209,
       },
     },
-    farmData: {
-      size: 5,
-      unit: 'hectares',
-      soilType: 'loamy',
-      crops: ['Rice'],
-      irrigationType: 'canal',
-    },
+    farmSize: 5,
+    primaryCrops: ['Rice'],
+    soilType: 'loamy',
     createdAt: new Date(),
     updatedAt: new Date(),
   };

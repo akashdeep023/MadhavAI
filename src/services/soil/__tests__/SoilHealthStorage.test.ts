@@ -53,11 +53,11 @@ describe('SoilHealthStorage', () => {
 
       expect(encryptedStorage.setItem).toHaveBeenCalledWith(
         'soil_health_soil123',
-        expect.any(String)
+        mockSoilData
       );
       expect(encryptedStorage.setItem).toHaveBeenCalledWith(
         'soil_health_index',
-        expect.any(String)
+        expect.any(Object)
       );
     });
 
@@ -72,7 +72,7 @@ describe('SoilHealthStorage', () => {
       );
 
       expect(indexCall).toBeDefined();
-      const indexData = JSON.parse(indexCall[1]);
+      const indexData = indexCall[1];
       expect(indexData.user123).toContain('soil123');
     });
 
@@ -87,7 +87,7 @@ describe('SoilHealthStorage', () => {
 
   describe('getSoilHealth', () => {
     it('should retrieve soil health record by ID', async () => {
-      (encryptedStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(mockSoilData));
+      (encryptedStorage.getItem as jest.Mock).mockResolvedValue(mockSoilData);
 
       const result = await soilHealthStorage.getSoilHealth('soil123');
 
@@ -121,9 +121,9 @@ describe('SoilHealthStorage', () => {
       const soil2 = { ...mockSoilData, id: 'soil456', testDate: new Date('2024-01-10') };
 
       (encryptedStorage.getItem as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'soil_health_index') return Promise.resolve(JSON.stringify(index));
-        if (key === 'soil_health_soil123') return Promise.resolve(JSON.stringify(soil1));
-        if (key === 'soil_health_soil456') return Promise.resolve(JSON.stringify(soil2));
+        if (key === 'soil_health_index') return Promise.resolve(index);
+        if (key === 'soil_health_soil123') return Promise.resolve(soil1);
+        if (key === 'soil_health_soil456') return Promise.resolve(soil2);
         return Promise.resolve(null);
       });
 
@@ -158,9 +158,9 @@ describe('SoilHealthStorage', () => {
       const soil2 = { ...mockSoilData, id: 'soil456', testDate: new Date('2024-01-10') };
 
       (encryptedStorage.getItem as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'soil_health_index') return Promise.resolve(JSON.stringify(index));
-        if (key === 'soil_health_soil123') return Promise.resolve(JSON.stringify(soil1));
-        if (key === 'soil_health_soil456') return Promise.resolve(JSON.stringify(soil2));
+        if (key === 'soil_health_index') return Promise.resolve(index);
+        if (key === 'soil_health_soil123') return Promise.resolve(soil1);
+        if (key === 'soil_health_soil456') return Promise.resolve(soil2);
         return Promise.resolve(null);
       });
 
@@ -181,9 +181,7 @@ describe('SoilHealthStorage', () => {
 
   describe('updateSoilHealth', () => {
     it('should update soil health record', async () => {
-      (encryptedStorage.getItem as jest.Mock).mockResolvedValue(
-        JSON.stringify({ user123: ['soil123'] })
-      );
+      (encryptedStorage.getItem as jest.Mock).mockResolvedValue({ user123: ['soil123'] });
       (encryptedStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
       const updatedData = { ...mockSoilData, parameters: { ...mockSoilData.parameters, pH: 7.0 } };
@@ -192,14 +190,12 @@ describe('SoilHealthStorage', () => {
 
       expect(encryptedStorage.setItem).toHaveBeenCalledWith(
         'soil_health_soil123',
-        expect.any(String)
+        expect.any(Object)
       );
     });
 
     it('should update updatedAt timestamp', async () => {
-      (encryptedStorage.getItem as jest.Mock).mockResolvedValue(
-        JSON.stringify({ user123: ['soil123'] })
-      );
+      (encryptedStorage.getItem as jest.Mock).mockResolvedValue({ user123: ['soil123'] });
       (encryptedStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
       const originalDate = mockSoilData.updatedAt;
@@ -212,7 +208,7 @@ describe('SoilHealthStorage', () => {
   describe('deleteSoilHealth', () => {
     it('should delete soil health record', async () => {
       const index = { user123: ['soil123', 'soil456'] };
-      (encryptedStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(index));
+      (encryptedStorage.getItem as jest.Mock).mockResolvedValue(index);
       (encryptedStorage.removeItem as jest.Mock).mockResolvedValue(undefined);
       (encryptedStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
@@ -221,13 +217,13 @@ describe('SoilHealthStorage', () => {
       expect(encryptedStorage.removeItem).toHaveBeenCalledWith('soil_health_soil123');
       expect(encryptedStorage.setItem).toHaveBeenCalledWith(
         'soil_health_index',
-        expect.any(String)
+        expect.any(Object)
       );
     });
 
     it('should remove record from index', async () => {
       const index = { user123: ['soil123', 'soil456'] };
-      (encryptedStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(index));
+      (encryptedStorage.getItem as jest.Mock).mockResolvedValue(index);
       (encryptedStorage.removeItem as jest.Mock).mockResolvedValue(undefined);
       (encryptedStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
@@ -237,7 +233,7 @@ describe('SoilHealthStorage', () => {
         (call) => call[0] === 'soil_health_index'
       );
 
-      const updatedIndex = JSON.parse(indexCall[1]);
+      const updatedIndex = indexCall[1];
       expect(updatedIndex.user123).not.toContain('soil123');
       expect(updatedIndex.user123).toContain('soil456');
     });
@@ -258,9 +254,9 @@ describe('SoilHealthStorage', () => {
       const soil2 = { ...mockSoilData, id: 'soil456' };
 
       (encryptedStorage.getItem as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'soil_health_index') return Promise.resolve(JSON.stringify(index));
-        if (key === 'soil_health_soil123') return Promise.resolve(JSON.stringify(soil1));
-        if (key === 'soil_health_soil456') return Promise.resolve(JSON.stringify(soil2));
+        if (key === 'soil_health_index') return Promise.resolve(index);
+        if (key === 'soil_health_soil123') return Promise.resolve(soil1);
+        if (key === 'soil_health_soil456') return Promise.resolve(soil2);
         return Promise.resolve(null);
       });
       (encryptedStorage.removeItem as jest.Mock).mockResolvedValue(undefined);
@@ -277,8 +273,8 @@ describe('SoilHealthStorage', () => {
       const soil1 = { ...mockSoilData, id: 'soil123' };
 
       (encryptedStorage.getItem as jest.Mock).mockImplementation((key: string) => {
-        if (key === 'soil_health_index') return Promise.resolve(JSON.stringify(index));
-        if (key === 'soil_health_soil123') return Promise.resolve(JSON.stringify(soil1));
+        if (key === 'soil_health_index') return Promise.resolve(index);
+        if (key === 'soil_health_soil123') return Promise.resolve(soil1);
         return Promise.resolve(null);
       });
       (encryptedStorage.removeItem as jest.Mock).mockRejectedValue(new Error('Storage error'));
