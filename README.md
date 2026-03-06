@@ -36,17 +36,20 @@ An AI-powered mobile application designed to provide Indian farmers with actiona
 ## 🛠️ Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd MadhavAI
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Install iOS dependencies (macOS only):
+
 ```bash
 cd ios && pod install && cd ..
 ```
@@ -54,16 +57,19 @@ cd ios && pod install && cd ..
 ## 🏃 Running the Application
 
 ### Start Metro Bundler
+
 ```bash
 npm start
 ```
 
 ### Run on Android
+
 ```bash
 npm run android
 ```
 
 ### Run on iOS (macOS only)
+
 ```bash
 npm run ios
 ```
@@ -71,46 +77,55 @@ npm run ios
 ## 🧪 Testing
 
 ### Run all tests
+
 ```bash
 npm test
 ```
 
 ### Run tests in watch mode
+
 ```bash
 npm run test:watch
 ```
 
 ### Run tests with coverage
+
 ```bash
 npm run test:coverage
 ```
 
 ### Run property-based tests
+
 Property-based tests use fast-check library and are included in the test suite. They validate correctness properties across randomized inputs.
 
 ## 🔍 Code Quality
 
 ### Lint code
+
 ```bash
 npm run lint
 ```
 
 ### Fix linting issues
+
 ```bash
 npm run lint:fix
 ```
 
 ### Format code
+
 ```bash
 npm run format
 ```
 
 ### Check formatting
+
 ```bash
 npm run format:check
 ```
 
 ### Type check
+
 ```bash
 npm run type-check
 ```
@@ -139,22 +154,23 @@ MadhavAI/
 This project follows a spec-driven development approach. Implementation tasks are defined in `.kiro/specs/farmer-decision-support-platform/tasks.md`.
 
 ### Current Status
-✅ Task 1: Project setup and infrastructure foundation - COMPLETE       
-✅ Task 2: Authentication module implementation     
-✅ Task 3: User profile module implementation       
-✅ Task 4: Offline sync module implementation       
-✅ Task 5: Checkpoint - Core infrastructure validation      
-✅ Task 6: Weather intelligence module implementation       
-✅ Task 7: Market intelligence module implementation        
-✅ Task 8: oil health module implementation     
-✅ Task 9: Recommendation engine implementation     
-✅ Task 10: Checkpoint - Core recommendation engine validation      
-✅ Task 11: Government schemes navigator implementation     
-✅ Task 12: Training and learning module implementation     
-✅ Task 13: Alert and reminder system implementation        
-✅ Task 14: Voice interface module implementation       
-✅ Task 15: Multilanguage support implementation        
-✅ Task 16: Dashboard module implementation         
+
+✅ Task 1: Project setup and infrastructure foundation - COMPLETE  
+✅ Task 2: Authentication module implementation  
+✅ Task 3: User profile module implementation  
+✅ Task 4: Offline sync module implementation  
+✅ Task 5: Checkpoint - Core infrastructure validation  
+✅ Task 6: Weather intelligence module implementation  
+✅ Task 7: Market intelligence module implementation  
+✅ Task 8: oil health module implementation  
+✅ Task 9: Recommendation engine implementation  
+✅ Task 10: Checkpoint - Core recommendation engine validation  
+✅ Task 11: Government schemes navigator implementation  
+✅ Task 12: Training and learning module implementation  
+✅ Task 13: Alert and reminder system implementation  
+✅ Task 14: Voice interface module implementation  
+✅ Task 15: Multilanguage support implementation  
+✅ Task 16: Dashboard module implementation  
 ✅ Task 17: Checkpoint - Core features integration validation
 
 ## 🌍 Supported Languages
@@ -207,16 +223,33 @@ This project follows a spec-driven development approach. Implementation tasks ar
 
 ## 📝 License
 
-[License information to be added]
+This project is licensed under the MIT License. See the LICENSE file for more information.
 
 ## 👥 Team
 
-[Team information to be added]
+**Payal Kumari**  
+Team Leader | Full Stack Developer | AI Integration  
+LinkedIn: https://www.linkedin.com/in/payalkumari10/
+
+**Akashdeep**  
+Full Stack Developer | React Native Development  
+LinkedIn: https://www.linkedin.com/in/akashdeep023/
+
+**Prem Rathod**  
+Full Stack Developer | Backend & Cloud Support  
+LinkedIn: https://www.linkedin.com/in/prem-arun-rathod/
 
 ## 📞 Support
 
-[Support information to be added]
+If you have questions, suggestions, or would like to collaborate, feel free to reach out.
+
+**Payal Kumari**  
+Team Leader – Team Madhav  
+📧 Email: kumaripayal7488.com  
+🔗 LinkedIn: https://www.linkedin.com/in/payalkumari10/
+
+For technical queries, you can also connect with any of the Team Madhav members listed above.
 
 ---
 
-Built with ❤️ for Indian farmers
+Built with ❤️ to empower Indian farmers with AI-powered decision support.
