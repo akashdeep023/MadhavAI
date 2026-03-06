@@ -1,0 +1,46 @@
+{
+  "common": {
+    "yes": "हाँ",
+    "no": "नहीं",
+    "ok": "ठीक है",
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "back": "वापस",
+    "next": "अगला",
+    "submit": "जमा करें",
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "success": "सफलता"
+  },
+  "auth": {
+    "login": "लॉगिन",
+    "logout": "लॉगआउट",
+    "register": "पंजीकरण करें",
+    "enterMobile": "मोबाइल नंबर दर्ज करें",
+    "enterOTP": "OTP दर्ज करें",
+    "sendOTP": "OTP भेजें",
+    "verifyOTP": "OTP सत्यापित करें",
+    "invalidOTP": "अमान्य OTP",
+    "otpExpired": "OTP समाप्त हो गया"
+  },
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "weather": "मौसम",
+    "alerts": "अलर्ट",
+    "recommendations": "सिफारिशें",
+    "marketPrices": "बाजार मूल्य",
+    "schemes": "योजनाएं",
+    "training": "प्रशिक्षण"
+  },
+  "profile": {
+    "title": "प्रोफ़ाइल",
+    "name": "नाम",
+    "mobile": "मोबाइल",
+    "location": "स्थान",
+    "farmSize": "खेत का आकार",
+    "crops": "फसलें",
+    "language": "भाषा"
+  }
+}

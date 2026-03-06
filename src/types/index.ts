@@ -57,3 +57,4 @@ export * from './scheme.types';
 export * from './training.types';
 export * from './alert.types';
 export * from './voice.types';
+export * from './translation.types';

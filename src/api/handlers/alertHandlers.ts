@@ -348,7 +348,7 @@ export async function scheduleCropActivityAlerts(event: any): Promise<any> {
 /**
  * Process due alerts (background job)
  */
-export async function processDueAlerts(event: any): Promise<any> {
+export async function processDueAlerts(_event: any): Promise<any> {
   try {
     logger.info('Processing due alerts');
 
