@@ -10,8 +10,10 @@ import LanguagePreferenceManager from '../services/translation/LanguagePreferenc
 
 interface UseTranslationResult {
   t: (key: TranslationKey, params?: {[key: string]: string | number}) => string;
+  translate: (key: TranslationKey, params?: {[key: string]: string | number}) => string;
   language: LanguageCode;
   setLanguage: (language: LanguageCode) => Promise<void>;
+  changeLanguage: (language: LanguageCode) => Promise<void>;
   isLoading: boolean;
   error: Error | null;
 }
@@ -104,8 +106,10 @@ export function useTranslation(): UseTranslationResult {
 
   return {
     t,
+    translate: t, // Alias for convenience
     language,
     setLanguage,
+    changeLanguage: setLanguage, // Alias for convenience
     isLoading,
     error,
   };
