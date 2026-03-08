@@ -107,7 +107,9 @@ describe('SchemeService', () => {
 
       const schemes = await service.getAllSchemes();
 
-      expect(schemes).toEqual([]);
+      // API now returns 6 mock schemes instead of empty array
+      expect(schemes.length).toBe(6);
+      expect(schemes[0].name).toContain('PM-KISAN');
     });
 
     it('should cache fetched schemes', async () => {
@@ -132,14 +134,15 @@ describe('SchemeService', () => {
       };
 
       // When cache is expired, it will try to fetch from API
-      // Since API returns empty array, it will cache that
+      // API now returns 6 mock schemes
       (encryptedStorage.getItem as jest.Mock).mockResolvedValue(expiredCache);
       (encryptedStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
       const schemes = await service.getAllSchemes();
 
-      // API returns empty array in mock implementation
-      expect(schemes).toEqual([]);
+      // API returns 6 mock schemes
+      expect(schemes.length).toBe(6);
+      expect(schemes[0].name).toContain('PM-KISAN');
     });
   });
 
@@ -326,7 +329,9 @@ describe('SchemeService', () => {
       const schemes = await service.refreshSchemes();
 
       expect(encryptedStorage.removeItem).toHaveBeenCalledWith('schemes_cache');
-      expect(schemes).toEqual([]);
+      // API now returns 6 mock schemes
+      expect(schemes.length).toBe(6);
+      expect(schemes[0].name).toContain('PM-KISAN');
     });
   });
 });

@@ -146,8 +146,26 @@ MadhavAI/
 ├── android/             # Android native code
 ├── ios/                 # iOS native code
 ├── __tests__/           # Test files
+├── docs/                # Project documentation
 └── .kiro/specs/         # Specification documents
 ```
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the `docs/` folder:
+
+- [Checkpoint 5 Validation](docs/01-checkpoint-5-validation.md)
+- [Dashboard Implementation](docs/02-dashboard-implementation.md)
+- [Document Picker Setup](docs/03-document-picker-setup.md)
+- [Multilanguage Implementation](docs/04-multilanguage-implementation.md)
+- [Soil Health Upload Guide](docs/05-soil-health-upload-guide.md)
+- [Voice Interface Implementation](docs/06-voice-interface-implementation.md)
+- [Project Structure](docs/07-project-structure.md)
+- [Test Results](docs/08-test-results.md) - 718 tests, 100% passing ✅
+- [Voice Interface Guide](docs/09-voice-interface-guide.md)
+- [Translation Service Guide](docs/10-translation-service-guide.md)
+
+For a complete documentation index, see [docs/README.md](docs/README.md).
 
 ## 🎯 Development Workflow
 

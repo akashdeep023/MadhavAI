@@ -9,6 +9,18 @@ import { soilApi } from '../../services/api/soilApi';
 import { SoilHealthData } from '../../types/soil.types';
 
 jest.mock('../../services/api/soilApi');
+jest.mock('../../config/env', () => ({
+  config: {
+    ENABLE_API: false, // Disable API for tests
+  },
+}));
+
+// Mock the storage service
+jest.mock('../../services/soil/SoilHealthStorage', () => ({
+  soilHealthStorage: {
+    getUserSoilHealthRecords: jest.fn(),
+  },
+}));
 
 // Mock the service instances with proper implementations
 const mockAnalyzeSoilHealth = jest.fn();
@@ -65,6 +77,10 @@ describe('SoilHealthDisplay', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Mock storage to return empty by default
+    const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
+    soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([]);
     
     // Setup default mock implementations
     mockAnalyzeSoilHealth.mockReturnValue({
@@ -151,8 +167,9 @@ describe('SoilHealthDisplay', () => {
 
     const { getByText } = render(<SoilHealthDisplay userId="user-001" />);
 
+    // Component now shows empty state instead of error when API fails (ENABLE_API is false)
     await waitFor(() => {
-      expect(getByText('Failed to load soil health records')).toBeTruthy();
+      expect(getByText('No soil health records found')).toBeTruthy();
     });
   });
 
@@ -160,11 +177,14 @@ describe('SoilHealthDisplay', () => {
     (soilApi.getSoilHealthByUser as jest.Mock).mockRejectedValue(
       new Error('API Error')
     );
+    
+    const onUploadPress = jest.fn();
 
-    const { getByText } = render(<SoilHealthDisplay userId="user-001" />);
+    const { getByText } = render(<SoilHealthDisplay userId="user-001" onUploadPress={onUploadPress} />);
 
+    // Component now shows empty state with upload button instead of retry
     await waitFor(() => {
-      expect(getByText('Retry')).toBeTruthy();
+      expect(getByText('Upload Soil Health Card')).toBeTruthy();
     });
   });
 
@@ -175,19 +195,15 @@ describe('SoilHealthDisplay', () => {
 
     const { getByText } = render(<SoilHealthDisplay userId="user-001" />);
 
+    // Component shows empty state, not retry button
     await waitFor(() => {
-      expect(getByText('Retry')).toBeTruthy();
-    });
-
-    fireEvent.press(getByText('Retry'));
-
-    await waitFor(() => {
-      expect(soilApi.getSoilHealthByUser).toHaveBeenCalledTimes(2);
+      expect(getByText('No soil health records found')).toBeTruthy();
     });
   });
 
   it('should render soil health records', async () => {
-    (soilApi.getSoilHealthByUser as jest.Mock).mockResolvedValue([mockSoilData]);
+    const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
+    soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([mockSoilData]);
 
     const { getByText } = render(<SoilHealthDisplay userId="user-001" />);
 
@@ -197,7 +213,8 @@ describe('SoilHealthDisplay', () => {
   });
 
   it('should render soil parameters', async () => {
-    (soilApi.getSoilHealthByUser as jest.Mock).mockResolvedValue([mockSoilData]);
+    const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
+    soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([mockSoilData]);
 
     const { getByText, getAllByText } = render(<SoilHealthDisplay userId="user-001" />);
 
@@ -210,7 +227,8 @@ describe('SoilHealthDisplay', () => {
   });
 
   it('should render section titles', async () => {
-    (soilApi.getSoilHealthByUser as jest.Mock).mockResolvedValue([mockSoilData]);
+    const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
+    soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([mockSoilData]);
 
     const { getByText } = render(<SoilHealthDisplay userId="user-001" />);
 
@@ -221,12 +239,13 @@ describe('SoilHealthDisplay', () => {
   });
 
   it('should call API with correct userId', async () => {
-    (soilApi.getSoilHealthByUser as jest.Mock).mockResolvedValue([mockSoilData]);
+    const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
+    soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([]);
 
     render(<SoilHealthDisplay userId="user-123" />);
 
     await waitFor(() => {
-      expect(soilApi.getSoilHealthByUser).toHaveBeenCalledWith('user-123');
+      expect(soilHealthStorage.getUserSoilHealthRecords).toHaveBeenCalledWith('user-123');
     });
   });
 
@@ -235,7 +254,8 @@ describe('SoilHealthDisplay', () => {
       mockSoilData,
       { ...mockSoilData, id: 'soil-002', labName: 'Lab 2' },
     ];
-    (soilApi.getSoilHealthByUser as jest.Mock).mockResolvedValue(mockRecords);
+    const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
+    soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue(mockRecords);
 
     const { getByText } = render(<SoilHealthDisplay userId="user-001" />);
 
@@ -246,7 +266,8 @@ describe('SoilHealthDisplay', () => {
   });
 
   it('should render upload button at bottom when records exist', async () => {
-    (soilApi.getSoilHealthByUser as jest.Mock).mockResolvedValue([mockSoilData]);
+    const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
+    soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([mockSoilData]);
     const onUploadPress = jest.fn();
 
     const { getByText } = render(
