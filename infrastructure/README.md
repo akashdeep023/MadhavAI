@@ -18,24 +18,33 @@ The platform uses a serverless architecture on AWS with the following components
 
 ```
 infrastructure/
-├── terraform/           # Terraform configuration files
-│   ├── main.tf         # Main configuration and providers
-│   ├── variables.tf    # Input variables
-│   ├── outputs.tf      # Output values
-│   ├── vpc.tf          # VPC and networking
-│   ├── iam.tf          # IAM roles and policies
-│   ├── dynamodb.tf     # DynamoDB tables
-│   ├── s3.tf           # S3 buckets
-│   ├── cloudfront.tf   # CloudFront distribution
-│   ├── lambda.tf       # Lambda functions
-│   ├── api-gateway.tf  # API Gateway configuration
-│   ├── sns.tf          # SNS topics
-│   ├── monitoring.tf   # CloudWatch monitoring
-│   └── multi-region.tf # Multi-region setup
-└── scripts/            # Deployment scripts
-    ├── build-lambda.sh # Build Lambda functions
-    ├── deploy.sh       # Deploy infrastructure
-    └── rollback.sh     # Rollback deployment
+├── terraform/                  # Terraform configuration files
+│   ├── main.tf                # Main configuration and providers
+│   ├── variables.tf           # Input variables
+│   ├── outputs.tf             # Output values
+│   ├── vpc.tf                 # VPC and networking
+│   ├── iam.tf                 # IAM roles and policies
+│   ├── dynamodb.tf            # DynamoDB tables
+│   ├── s3.tf                  # S3 buckets
+│   ├── cloudfront.tf          # CloudFront distribution
+│   ├── lambda.tf              # Lambda functions
+│   ├── api-gateway.tf         # API Gateway configuration
+│   ├── sns.tf                 # SNS topics
+│   ├── monitoring.tf          # CloudWatch monitoring
+│   ├── multi-region.tf        # Multi-region setup
+│   └── disaster-recovery.tf   # DR and backup configuration
+├── lambda/                     # Lambda function source code
+│   ├── failover-handler/      # Automated failover function
+│   └── dr-test/               # DR testing function
+├── scripts/                    # Deployment scripts
+│   ├── build-lambda.sh        # Build Lambda functions
+│   ├── build-dr-lambdas.sh    # Build DR Lambda functions
+│   ├── deploy.sh              # Deploy infrastructure
+│   └── rollback.sh            # Rollback deployment
+└── docs/                       # Documentation
+    ├── DISASTER_RECOVERY_PROCEDURES.md  # Complete DR procedures
+    ├── DR_QUICK_REFERENCE.md            # Quick reference guide
+    └── DR_TESTING_SCHEDULE.md           # Testing schedule
 ```
 
 ## Prerequisites
@@ -212,17 +221,109 @@ The infrastructure uses several cost optimization strategies:
 **RTO (Recovery Time Objective)**: 1 hour  
 **RPO (Recovery Point Objective)**: 5 minutes
 
-### Backup Strategy
-- DynamoDB continuous backups with point-in-time recovery
-- S3 versioning enabled
-- Cross-region replication
-- Daily snapshots
+### Documentation
 
-### Failover Process
-1. Route53 health check detects primary region failure
-2. Automatic DNS failover to backup region
-3. DynamoDB global tables provide data consistency
-4. S3 replicated content available in backup region
+- **[Disaster Recovery Procedures](docs/DISASTER_RECOVERY_PROCEDURES.md)**: Complete DR procedures and runbooks
+- **[DR Quick Reference](docs/DR_QUICK_REFERENCE.md)**: Quick reference guide for emergencies
+- **[DR Testing Schedule](docs/DR_TESTING_SCHEDULE.md)**: Testing schedule and procedures
+
+### Backup Strategy
+
+1. **DynamoDB Backups**
+   - Point-in-time recovery enabled (5-minute RPO)
+   - Automated daily backups (2:00 AM UTC)
+   - Weekly backups retained for 90 days
+   - Cross-region backup replication
+
+2. **S3 Backups**
+   - Versioning enabled on all buckets
+   - Cross-region replication to backup region
+   - Daily automated backups
+   - 30-day retention for daily backups
+
+3. **Infrastructure Backups**
+   - Terraform state versioned in S3
+   - Configuration stored in version control
+   - Lambda deployment packages archived
+
+### Automated Failover
+
+The platform includes automated failover capabilities:
+
+1. **Health Monitoring**: Route53 health checks every 30 seconds
+2. **Failure Detection**: 3 consecutive failures trigger alarm (90 seconds)
+3. **Automated Response**: CloudWatch alarm invokes failover Lambda
+4. **Verification**: Lambda verifies primary down and backup healthy
+5. **DNS Update**: Route53 records updated to backup region
+6. **Notification**: SNS alerts sent to operations team
+7. **Expected Duration**: ~15 minutes total
+
+### Manual Failover
+
+For planned maintenance or if automated failover fails:
+
+```bash
+# Quick failover (5 minutes)
+cd infrastructure/terraform
+
+# 1. Verify backup region
+aws dynamodb describe-table \
+  --table-name farmer-platform-users-production \
+  --region ap-southeast-1
+
+# 2. Update DNS to backup region
+aws route53 change-resource-record-sets \
+  --hosted-zone-id <ZONE_ID> \
+  --change-batch file://failover-dns.json
+
+# 3. Verify
+curl https://api.farmer-platform.com/health
+
+# 4. Notify team
+aws sns publish \
+  --topic-arn <SNS_ARN> \
+  --subject "Manual Failover Executed" \
+  --message "Failover to backup region completed"
+```
+
+See [DR Procedures](docs/DISASTER_RECOVERY_PROCEDURES.md) for detailed steps.
+
+### DR Testing
+
+- **Automated Tests**: Monthly on 1st at 10:00 AM UTC
+- **Failover Drills**: Quarterly (last Saturday of quarter)
+- **Full Simulation**: Annually in November
+
+Test results are sent via SNS and logged in CloudWatch.
+
+### Recovery Procedures
+
+**Point-in-Time Recovery** (for data corruption):
+
+```bash
+# Restore DynamoDB table to specific time
+aws dynamodb restore-table-to-point-in-time \
+  --source-table-name farmer-platform-users-production \
+  --target-table-name farmer-platform-users-production-restored \
+  --restore-date-time "2024-01-15T10:30:00Z" \
+  --region ap-south-1
+```
+
+**Backup Restoration**:
+
+```bash
+# List available backups
+aws backup list-recovery-points-by-backup-vault \
+  --backup-vault-name farmer-platform-dynamodb-backup-vault \
+  --region ap-south-1
+
+# Restore from backup
+aws backup start-restore-job \
+  --recovery-point-arn <ARN> \
+  --metadata '{"TableName":"farmer-platform-users-production-restored"}' \
+  --iam-role-arn <ROLE_ARN> \
+  --region ap-south-1
+```
 
 ## Troubleshooting
 

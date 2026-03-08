@@ -1,0 +1,12 @@
+{
+  "name": "dr-test",
+  "version": "1.0.0",
+  "description": "Disaster recovery testing function",
+  "main": "index.js",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.0.0",
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/client-backup": "^3.0.0",
+    "@aws-sdk/client-sns": "^3.0.0"
+  }
+}
