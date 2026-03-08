@@ -1,0 +1,233 @@
+name: Backend CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  NODE_VERSION: '22.11.0'
+  AWS_REGION: ap-south-1
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run linter
+        run: npm run lint
+      
+      - name: Run unit tests
+        run: npm test -- --coverage
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: unittests
+      
+      - name: Build Lambda functions
+        run: |
+          mkdir -p dist/lambda
+          npm run build:lambda
+      
+      - name: Upload Lambda artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-functions
+          path: dist/lambda/*.zip
+          retention-days: 7
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run dependency vulnerability scan
+        run: npm audit --audit-level=moderate
+      
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [build-and-test, security-scan]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Download Lambda artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-functions
+          path: dist/lambda
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+      
+      - name: Terraform Init
+        working-directory: infrastructure/terraform
+        run: terraform init
+      
+      - name: Terraform Plan
+        working-directory: infrastructure/terraform
+        run: |
+          terraform plan \
+            -var="environment=staging" \
+            -var="alert_email=${{ secrets.ALERT_EMAIL }}" \
+            -out=tfplan
+      
+      - name: Terraform Apply
+        working-directory: infrastructure/terraform
+        run: terraform apply -auto-approve tfplan
+      
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          API_URL: ${{ secrets.STAGING_API_URL }}
+
+  deploy-production:
+    name: Deploy to Production
+    needs: [build-and-test, security-scan]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Download Lambda artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-functions
+          path: dist/lambda
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+      
+      - name: Terraform Init
+        working-directory: infrastructure/terraform
+        run: terraform init
+      
+      - name: Terraform Plan
+        working-directory: infrastructure/terraform
+        run: |
+          terraform plan \
+            -var="environment=production" \
+            -var="alert_email=${{ secrets.ALERT_EMAIL }}" \
+            -out=tfplan
+      
+      - name: Blue-Green Deployment - Create new version
+        working-directory: infrastructure/terraform
+        run: terraform apply -auto-approve tfplan
+      
+      - name: Canary Deployment - 10% traffic
+        run: |
+          aws lambda update-alias \
+            --function-name farmer-platform-auth-production \
+            --name live \
+            --routing-config AdditionalVersionWeights={"$LATEST"=0.1}
+      
+      - name: Monitor canary metrics
+        run: |
+          sleep 300
+          ERROR_RATE=$(aws cloudwatch get-metric-statistics \
+            --namespace AWS/Lambda \
+            --metric-name Errors \
+            --dimensions Name=FunctionName,Value=farmer-platform-auth-production \
+            --start-time $(date -u -d '5 minutes ago' +%Y-%m-%dT%H:%M:%S) \
+            --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
+            --period 300 \
+            --statistics Sum \
+            --query 'Datapoints[0].Sum' \
+            --output text)
+          
+          if [ "$ERROR_RATE" != "None" ] && [ "$ERROR_RATE" -gt 10 ]; then
+            echo "Error rate too high, rolling back"
+            exit 1
+          fi
+      
+      - name: Gradual traffic shift - 50%
+        run: |
+          aws lambda update-alias \
+            --function-name farmer-platform-auth-production \
+            --name live \
+            --routing-config AdditionalVersionWeights={"$LATEST"=0.5}
+      
+      - name: Monitor 50% traffic
+        run: sleep 300
+      
+      - name: Complete deployment - 100% traffic
+        run: |
+          aws lambda update-alias \
+            --function-name farmer-platform-auth-production \
+            --name live \
+            --routing-config AdditionalVersionWeights={}
+      
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Deployment failed, rolling back"
+          aws lambda update-alias \
+            --function-name farmer-platform-auth-production \
+            --name live \
+            --routing-config AdditionalVersionWeights={}
+          
+          # Revert to previous Terraform state
+          cd infrastructure/terraform
+          terraform apply -auto-approve -var="environment=production" -var="alert_email=${{ secrets.ALERT_EMAIL }}"
+      
+      - name: Notify deployment status
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment ${{ job.status }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
