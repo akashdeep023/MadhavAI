@@ -21,7 +21,7 @@ class OTPService {
     // Use crypto.getRandomValues for secure random number generation
     const array = new Uint32Array(1);
     // Check if crypto API is available (works in both browser and React Native)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     if (
       typeof (globalThis as any).crypto !== 'undefined' &&
       (globalThis as any).crypto.getRandomValues

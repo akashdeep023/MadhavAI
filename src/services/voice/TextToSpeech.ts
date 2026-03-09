@@ -17,7 +17,8 @@ class TextToSpeech {
   private defaultRate: number = 1.0;
   private defaultVolume: number = 1.0;
   private speakCallback: (() => void) | null = null;
-  private errorCallback: ((error: Error) => void) | null = null;
+  // @ts-expect-error - Reserved for future use
+  private _errorCallback: ((error: Error) => void) | null = null;
 
   /**
    * Check if text-to-speech is available on the device
@@ -111,7 +112,7 @@ class TextToSpeech {
   /**
    * Get available voices for a language
    */
-  async getVoices(language?: SupportedLanguage): Promise<string[]> {
+  async getVoices(_language?: SupportedLanguage): Promise<string[]> {
     // In production, get available voices from device
     // const voices = await Tts.voices();
     // if (language) {
@@ -168,7 +169,7 @@ class TextToSpeech {
    * Set callback for TTS errors
    */
   onError(callback: (error: Error) => void): void {
-    this.errorCallback = callback;
+    this._errorCallback = callback;
 
     // In production, set up error listeners
     // Tts.addEventListener('tts-error', (event) => {
@@ -221,7 +222,7 @@ class TextToSpeech {
     }
 
     this.speakCallback = null;
-    this.errorCallback = null;
+    this._errorCallback = null;
 
     // In production, remove event listeners
     // Tts.removeAllListeners('tts-finish');

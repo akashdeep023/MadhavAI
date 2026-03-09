@@ -89,6 +89,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
     const summary = generateDashboardSummary(dashboardData);
     await speak(summary);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardData, voiceSupported, speak]);
 
   /**

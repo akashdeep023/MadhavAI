@@ -3,7 +3,6 @@
  */
 
 import VoiceService from '../VoiceService';
-import {SupportedLanguage} from '../../../types/voice.types';
 
 describe('VoiceService', () => {
   let voiceService: VoiceService;

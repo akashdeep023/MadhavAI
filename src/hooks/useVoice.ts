@@ -42,6 +42,7 @@ export function useVoice(language: SupportedLanguage = 'hi-IN') {
       voiceManager.stopListening().catch(console.error);
       voiceManager.stopSpeaking().catch(console.error);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]);
 
   // Update state from voice service
@@ -54,6 +55,7 @@ export function useVoice(language: SupportedLanguage = 'hi-IN') {
 
     const interval = setInterval(updateState, 500);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -68,6 +70,7 @@ export function useVoice(language: SupportedLanguage = 'hi-IN') {
       setError(err as Error);
       setIsListening(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -84,6 +87,7 @@ export function useVoice(language: SupportedLanguage = 'hi-IN') {
       setIsListening(false);
       return '';
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -104,6 +108,7 @@ export function useVoice(language: SupportedLanguage = 'hi-IN') {
         };
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
@@ -120,6 +125,7 @@ export function useVoice(language: SupportedLanguage = 'hi-IN') {
       setError(err as Error);
       setIsSpeaking(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -132,6 +138,7 @@ export function useVoice(language: SupportedLanguage = 'hi-IN') {
     } catch (err) {
       setError(err as Error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**

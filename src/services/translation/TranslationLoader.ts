@@ -33,6 +33,7 @@ class TranslationLoader {
    */
   private async loadUITranslations(): Promise<void> {
     const uiTranslations: {[key in LanguageCode]?: TranslationContent} = {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       hi: require('./translations/ui.hi.json'),
       // Other languages would be loaded here
     };

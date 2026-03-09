@@ -51,7 +51,7 @@ const createSimpleTranslationService = () => {
   const translations = uiTranslations.en;
   return {
     translate: (key: string) => {
-      return (translations as any)[key] || key.split('.').pop() || key;
+      return (translations as Record<string, string>)[key] || key.split('.').pop() || key;
     },
     initialize: async () => {},
     setLanguage: async () => {},
@@ -60,8 +60,8 @@ const createSimpleTranslationService = () => {
 
 const translationService = createSimpleTranslationService() as any;
 const languagePreferenceManager = {
-  getLanguagePreference: async () => 'en' as any,
-  setRegistrationLanguage: async () => {},
+  getLanguagePreference: async () => 'en' as const,
+  setRegistrationLanguage: async (_lang: string) => {},
 } as any;
 
 // Initialize translation hook
@@ -70,7 +70,7 @@ initializeTranslationServices(translationService, languagePreferenceManager);
 // Create navigation stack
 const Stack = createNativeStackNavigator();
 
-function DashboardWrapper({ navigation }: any) {
+function DashboardWrapper({ navigation }: { navigation: any }) {
   const [userId, setUserId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -84,7 +84,7 @@ function DashboardWrapper({ navigation }: any) {
 
   if (!userId) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.centerContainer}>
         <Text>Loading...</Text>
       </View>
     );
@@ -99,7 +99,7 @@ function DashboardWrapper({ navigation }: any) {
   );
 }
 
-function LoginWrapper({ navigation }: any) {
+function LoginWrapper({ navigation }: { navigation: any }) {
   const handleLoginSuccess = async (userId: string, token: string) => {
     // Store session info
     await encryptedStorage.setItem('auth_token', token);
@@ -121,7 +121,7 @@ function LoginWrapper({ navigation }: any) {
   return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
 }
 
-function RegistrationWrapper({ navigation, route }: any) {
+function RegistrationWrapper({ navigation, route }: { navigation: any; route: any }) {
   const { mobileNumber } = route.params;
 
   const handleRegistrationComplete = () => {
@@ -172,7 +172,7 @@ function App(): React.JSX.Element {
   if (!isInitialized) {
     return (
       <SafeAreaProvider>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={styles.centerContainer}>
           <Text>Loading...</Text>
         </View>
       </SafeAreaProvider>
@@ -259,5 +259,13 @@ function App(): React.JSX.Element {
     </SafeAreaProvider>
   );
 }
+
+const styles = {
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+};
 
 export default App;

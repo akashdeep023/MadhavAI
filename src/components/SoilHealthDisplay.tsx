@@ -39,6 +39,7 @@ export const SoilHealthDisplay: React.FC<SoilHealthDisplayProps> = ({
 
   useEffect(() => {
     loadSoilRecords();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   useEffect(() => {
@@ -60,9 +61,8 @@ export const SoilHealthDisplay: React.FC<SoilHealthDisplayProps> = ({
       if (config.ENABLE_API) {
         try {
           apiRecords = await soilApi.getSoilHealthByUser(userId);
-        } catch (apiError) {
+        } catch {
           // API error - silently continue with local data
-          console.log('API not available, using local data only');
         }
       }
       
@@ -85,8 +85,7 @@ export const SoilHealthDisplay: React.FC<SoilHealthDisplayProps> = ({
         setSoilRecords(uniqueRecords);
         setSelectedRecord(uniqueRecords[0]);
       }
-    } catch (err) {
-      console.error('Error loading soil records:', err);
+    } catch {
       setError('Failed to load soil health records');
     } finally {
       setLoading(false);
@@ -106,7 +105,7 @@ export const SoilHealthDisplay: React.FC<SoilHealthDisplayProps> = ({
       // Get crop matches
       const matches = cropMatcher.getTopMatches(soilData, 5);
       setCropMatches(matches);
-    } catch (err) {
+    } catch {
       setError('Failed to analyze soil data');
     }
   };

@@ -21,7 +21,6 @@ interface AlertPreferencesProps {
 }
 
 export const AlertPreferences: React.FC<AlertPreferencesProps> = ({
-  userId,
   preferences,
   onUpdatePreferences,
 }) => {
@@ -41,8 +40,7 @@ export const AlertPreferences: React.FC<AlertPreferencesProps> = ({
       const updated = { ...localPreferences, [key]: value };
       setLocalPreferences(updated);
       await onUpdatePreferences({ [key]: value });
-    } catch (error) {
-      console.error('Failed to update preference', error);
+    } catch {
       // Revert on error
       setLocalPreferences(preferences);
     } finally {
@@ -64,8 +62,7 @@ export const AlertPreferences: React.FC<AlertPreferencesProps> = ({
       await onUpdatePreferences({
         alertTypes: { ...localPreferences.alertTypes, [type]: enabled },
       });
-    } catch (error) {
-      console.error('Failed to update alert type', error);
+    } catch {
       setLocalPreferences(preferences);
     } finally {
       setIsUpdating(false);
@@ -86,8 +83,7 @@ export const AlertPreferences: React.FC<AlertPreferencesProps> = ({
       await onUpdatePreferences({
         quietHours: { ...localPreferences.quietHours, enabled },
       });
-    } catch (error) {
-      console.error('Failed to update quiet hours', error);
+    } catch {
       setLocalPreferences(preferences);
     } finally {
       setIsUpdating(false);

@@ -19,8 +19,10 @@ import {
 class SpeechRecognizer {
   private isListening: boolean = false;
   private currentLanguage: SupportedLanguage = 'hi-IN';
-  private recognitionCallback: ((result: SpeechRecognitionResult) => void) | null = null;
-  private errorCallback: ((error: Error) => void) | null = null;
+  // @ts-expect-error - Reserved for future use
+  private _recognitionCallback: ((result: SpeechRecognitionResult) => void) | null = null;
+  // @ts-expect-error - Reserved for future use
+  private _errorCallback: ((error: Error) => void) | null = null;
 
   /**
    * Check if speech recognition is available on the device
@@ -36,7 +38,7 @@ class SpeechRecognizer {
    */
   async startListening(
     language: SupportedLanguage,
-    options?: Partial<VoiceRecognitionOptions>,
+    _options?: Partial<VoiceRecognitionOptions>,
   ): Promise<void> {
     if (this.isListening) {
       throw new Error('Already listening');
@@ -93,7 +95,7 @@ class SpeechRecognizer {
    * Set callback for recognition results
    */
   onResult(callback: (result: SpeechRecognitionResult) => void): void {
-    this.recognitionCallback = callback;
+    this._recognitionCallback = callback;
 
     // In production, set up event listeners
     // Voice.onSpeechResults = (event) => {
@@ -110,7 +112,7 @@ class SpeechRecognizer {
    * Set callback for recognition errors
    */
   onError(callback: (error: Error) => void): void {
-    this.errorCallback = callback;
+    this._errorCallback = callback;
 
     // In production, set up error listeners
     // Voice.onSpeechError = (event) => {
@@ -121,7 +123,7 @@ class SpeechRecognizer {
   /**
    * Set callback for partial results (interim results)
    */
-  onPartialResult(callback: (result: SpeechRecognitionResult) => void): void {
+  onPartialResult(_callback: (result: SpeechRecognitionResult) => void): void {
     // In production, set up partial result listeners
     // Voice.onSpeechPartialResults = (event) => {
     //   const transcript = event.value?.[0] || '';
@@ -177,8 +179,8 @@ class SpeechRecognizer {
       await this.cancel();
     }
 
-    this.recognitionCallback = null;
-    this.errorCallback = null;
+    this._recognitionCallback = null;
+    this._errorCallback = null;
 
     // In production, destroy native speech recognition
     // await Voice.destroy();

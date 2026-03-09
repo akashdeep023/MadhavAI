@@ -7,6 +7,7 @@ import {
   Lesson,
   LessonDetail,
   LearningProgress,
+  LessonCategory,
 } from '../../types/training.types';
 import { ContentManager } from './ContentManager';
 import { ProgressTracker } from './ProgressTracker';
@@ -45,9 +46,9 @@ export class TrainingService {
       }
       
       return response.data.lessons || [];
-    } catch (error) {
+    } catch {
       // Fallback to local storage if offline
-      return this.contentManager.getLessons(category as any, language);
+      return this.contentManager.getLessons(category as LessonCategory, language);
     }
   }
 
@@ -70,7 +71,7 @@ export class TrainingService {
       }
       
       return null;
-    } catch (error) {
+    } catch {
       // Fallback to local storage if offline
       return this.contentManager.getLesson(lessonId, language);
     }

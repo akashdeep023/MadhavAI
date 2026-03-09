@@ -9,7 +9,6 @@ import {
   AlertScheduleRequest,
   AlertType,
   AlertPriority,
-  ScheduledAlert,
 } from '../../types/alert.types';
 import { DatabaseService, databaseService } from '../storage/DatabaseService';
 

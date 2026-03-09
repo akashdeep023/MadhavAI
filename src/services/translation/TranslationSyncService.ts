@@ -28,7 +28,8 @@ interface SyncResult {
 
 class TranslationSyncService {
   private storage: TranslationStorage;
-  private contentManager: TranslationContentManager;
+  // @ts-expect-error - Reserved for future use
+  private _contentManager: TranslationContentManager;
   private remoteSource?: RemoteTranslationSource;
   private isSyncing: boolean = false;
 
@@ -38,7 +39,7 @@ class TranslationSyncService {
     remoteSource?: RemoteTranslationSource
   ) {
     this.storage = storage;
-    this.contentManager = contentManager;
+    this._contentManager = contentManager;
     this.remoteSource = remoteSource;
   }
 

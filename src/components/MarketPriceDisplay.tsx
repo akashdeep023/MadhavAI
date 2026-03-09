@@ -34,12 +34,14 @@ export const MarketPriceDisplay: React.FC<MarketPriceDisplayProps> = ({
 
   useEffect(() => {
     loadMarketData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latitude, longitude, crops, radiusKm]);
 
   useEffect(() => {
     if (selectedCrop && prices.length > 0) {
       loadTrendData(selectedCrop);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCrop, prices]);
 
   const loadMarketData = async () => {
@@ -191,7 +193,7 @@ export const MarketPriceDisplay: React.FC<MarketPriceDisplayProps> = ({
               <Text
                 style={[
                   styles.recommendationValue,
-                  { color: recommendation.priceAdvantage > 0 ? '#4CAF50' : '#F44336' },
+                  styles.priceAdvantageColor,
                 ]}
               >
                 {recommendation.priceAdvantage > 0 ? '+' : ''}
@@ -221,7 +223,7 @@ export const MarketPriceDisplay: React.FC<MarketPriceDisplayProps> = ({
               <Text
                 style={[
                   styles.trendChange,
-                  { color: trend.changePercent > 0 ? '#4CAF50' : '#F44336' },
+                  styles.trendChangeColor,
                 ]}
               >
                 {trend.changePercent > 0 ? '+' : ''}
@@ -564,5 +566,11 @@ const styles = StyleSheet.create({
   operatingHours: {
     fontSize: 12,
     color: '#666',
+  },
+  priceAdvantageColor: {
+    color: '#4CAF50',
+  },
+  trendChangeColor: {
+    color: '#4CAF50',
   },
 });

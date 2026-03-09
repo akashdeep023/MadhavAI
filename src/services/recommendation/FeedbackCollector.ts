@@ -4,8 +4,6 @@
  * Requirements: 16.6
  */
 
-import { RecommendationFeedback } from '../../types/recommendation.types';
-
 export type FeedbackAction = 'accepted' | 'rejected' | 'modified';
 export type RecommendationType = 'crop' | 'fertilizer' | 'seed';
 

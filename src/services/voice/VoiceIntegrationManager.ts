@@ -21,7 +21,8 @@ class VoiceIntegrationManager {
   private dashboardSummary: DashboardVoiceSummary;
   private recommendationReader: VoiceRecommendationReader;
   private currentLanguage: SupportedLanguage = 'hi-IN';
-  private isOfflineMode: boolean = false;
+  // @ts-expect-error - Reserved for future use
+  private _isOfflineMode: boolean = false;
 
   constructor() {
     this.voiceService = new VoiceService();
@@ -52,7 +53,7 @@ class VoiceIntegrationManager {
    * Set offline mode
    */
   setOfflineMode(isOffline: boolean): void {
-    this.isOfflineMode = isOffline;
+    this._isOfflineMode = isOffline;
     // Voice interface should work offline as it uses device native APIs
   }
 

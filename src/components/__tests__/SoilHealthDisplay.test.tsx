@@ -79,6 +79,7 @@ describe('SoilHealthDisplay', () => {
     jest.clearAllMocks();
     
     // Mock storage to return empty by default
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
     soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([]);
     
@@ -202,6 +203,7 @@ describe('SoilHealthDisplay', () => {
   });
 
   it('should render soil health records', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
     soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([mockSoilData]);
 
@@ -213,6 +215,7 @@ describe('SoilHealthDisplay', () => {
   });
 
   it('should render soil parameters', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
     soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([mockSoilData]);
 
@@ -227,6 +230,7 @@ describe('SoilHealthDisplay', () => {
   });
 
   it('should render section titles', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
     soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([mockSoilData]);
 
@@ -239,6 +243,7 @@ describe('SoilHealthDisplay', () => {
   });
 
   it('should call API with correct userId', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
     soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([]);
 
@@ -254,6 +259,7 @@ describe('SoilHealthDisplay', () => {
       mockSoilData,
       { ...mockSoilData, id: 'soil-002', labName: 'Lab 2' },
     ];
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
     soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue(mockRecords);
 
@@ -266,6 +272,7 @@ describe('SoilHealthDisplay', () => {
   });
 
   it('should render upload button at bottom when records exist', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { soilHealthStorage } = require('../../services/soil/SoilHealthStorage');
     soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([mockSoilData]);
     const onUploadPress = jest.fn();

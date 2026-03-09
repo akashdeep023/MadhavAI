@@ -21,6 +21,7 @@ describe('SoilApi', () => {
   beforeAll(() => {
     mockAxios.create.mockReturnValue(mockAxiosInstance as any);
     // Import after mocking
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const soilApiModule = require('../soilApi');
     SoilApi = soilApiModule.soilApi.constructor;
     soilApi = new SoilApi();

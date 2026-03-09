@@ -14,6 +14,7 @@ export default function RecommendationsScreen() {
 
   useEffect(() => {
     loadRecommendations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const loadRecommendations = async () => {

@@ -210,7 +210,7 @@ class SoilAnalyzer {
    * Calculate overall soil health score
    */
   private calculateOverallScore(
-    soilData: SoilHealthData,
+    _soilData: SoilHealthData,
     nutrientStatus: SoilAnalysis['nutrientStatus']
   ): number {
     let score = 0;

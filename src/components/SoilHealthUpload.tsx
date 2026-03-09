@@ -76,9 +76,8 @@ export const SoilHealthUpload: React.FC<SoilHealthUploadProps> = ({
       if (result.assets && result.assets.length > 0) {
         handleImageResult(result.assets[0]);
       }
-    } catch (err: any) {
+    } catch {
       Alert.alert('Error', 'Failed to open camera. Please try again.');
-      console.error('Camera Error:', err);
     }
   };
 
@@ -93,7 +92,7 @@ export const SoilHealthUpload: React.FC<SoilHealthUploadProps> = ({
       if (result.assets && result.assets.length > 0) {
         handleImageResult(result.assets[0]);
       } else if (result.didCancel) {
-        console.log('User cancelled image picker');
+        // User cancelled - no action needed
       } else if (result.errorCode) {
         Alert.alert(
           'Error',
@@ -110,9 +109,8 @@ export const SoilHealthUpload: React.FC<SoilHealthUploadProps> = ({
           ]
         );
       }
-    } catch (err: any) {
+    } catch {
       Alert.alert('Error', 'Failed to open gallery. Please try again.');
-      console.error('Gallery Error:', err);
     }
   };
 
@@ -179,7 +177,7 @@ export const SoilHealthUpload: React.FC<SoilHealthUploadProps> = ({
           'Soil health card data has been extracted and saved.',
           [{ text: 'OK', onPress: () => onUploadComplete(extractedData) }]
         );
-      } catch (error) {
+      } catch {
         setProcessing(false);
         setSelectedImage(null);
         Alert.alert('Error', 'Failed to save soil health data. Please try again.');
@@ -226,7 +224,7 @@ export const SoilHealthUpload: React.FC<SoilHealthUploadProps> = ({
         'Soil health data has been saved.',
         [{ text: 'OK', onPress: () => onUploadComplete(manualData) }]
       );
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to save soil health data. Please try again.');
     }
   };

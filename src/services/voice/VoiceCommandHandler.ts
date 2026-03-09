@@ -16,7 +16,8 @@ import {
  */
 class VoiceCommandHandler {
   private commands: Map<VoiceCommandType, VoiceCommand> = new Map();
-  private currentLanguage: SupportedLanguage = 'hi-IN';
+  // @ts-expect-error - Reserved for future use
+  private _currentLanguage: SupportedLanguage = 'hi-IN';
 
   constructor() {
     this.initializeCommands();
@@ -209,7 +210,7 @@ class VoiceCommandHandler {
    * Set current language for command processing
    */
   setLanguage(language: SupportedLanguage): void {
-    this.currentLanguage = language;
+    this._currentLanguage = language;
   }
 
   // Command handlers

@@ -45,7 +45,6 @@ export default function SchemesScreen() {
   const handleApply = () => {
     // Handle application - could open browser or navigate to application form
     logger.info('Apply for scheme', selectedScheme.id);
-    console.log('Apply for scheme:', selectedScheme.name);
   };
 
   if (selectedScheme) {

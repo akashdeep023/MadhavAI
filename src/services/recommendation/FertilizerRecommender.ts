@@ -353,7 +353,7 @@ export class FertilizerRecommender {
   private getApplicationTiming(
     nutrient: string,
     growthStage: GrowthStage,
-    cropName: string
+    _cropName: string
   ): string {
     const timings: Record<string, Record<GrowthStage, string>> = {
       nitrogen: {

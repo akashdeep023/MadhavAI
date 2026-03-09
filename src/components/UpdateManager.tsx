@@ -25,11 +25,8 @@ interface UpdateManagerProps {
 }
 
 export const UpdateManager: React.FC<UpdateManagerProps> = ({ onUpdateComplete }) => {
-  const [isChecking, setIsChecking] = useState(false);
-  const [hasUpdates, setHasUpdates] = useState(false);
   const [isCritical, setIsCritical] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [updateProgress, setUpdateProgress] = useState(0);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   useEffect(() => {
@@ -37,15 +34,14 @@ export const UpdateManager: React.FC<UpdateManagerProps> = ({ onUpdateComplete }
     
     // Start automatic update checks
     OTAUpdateService.startAutoUpdateCheck();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkForUpdates = async () => {
-    setIsChecking(true);
     try {
       const updates = await OTAUpdateService.checkForUpdates();
       const hasCritical = await OTAUpdateService.hasCriticalUpdates();
       
-      setHasUpdates(updates.length > 0);
       setIsCritical(hasCritical);
       
       if (hasCritical) {
@@ -56,10 +52,8 @@ export const UpdateManager: React.FC<UpdateManagerProps> = ({ onUpdateComplete }
         // Show optional update prompt
         setShowUpdateModal(true);
       }
-    } catch (error) {
-      console.error('Failed to check for updates:', error);
-    } finally {
-      setIsChecking(false);
+    } catch {
+      // Silently fail - updates are optional
     }
   };
 
@@ -152,11 +146,6 @@ export const UpdateManager: React.FC<UpdateManagerProps> = ({ onUpdateComplete }
             <View style={styles.progressContainer}>
               <ActivityIndicator size="large" color="#4CAF50" />
               <Text style={styles.progressText}>Installing updates...</Text>
-              {updateProgress > 0 && (
-                <Text style={styles.progressPercentage}>
-                  {Math.round(updateProgress)}%
-                </Text>
-              )}
             </View>
           ) : (
             <View style={styles.buttonContainer}>

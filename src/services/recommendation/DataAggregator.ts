@@ -45,8 +45,8 @@ export class DataAggregator {
         currentSeason,
         timestamp: new Date(),
       };
-    } catch (error) {
-      throw new Error(`Failed to aggregate data: ${error}`);
+    } catch {
+      throw new Error('Failed to aggregate data');
     }
   }
 
@@ -68,7 +68,7 @@ export class DataAggregator {
 
       // Return default profile if no data available
       return this.getDefaultProfile(userId);
-    } catch (error) {
+    } catch {
       // Return default profile on error
       return this.getDefaultProfile(userId);
     }
@@ -89,6 +89,7 @@ export class DataAggregator {
         state: 'Maharashtra',
         district: 'Pune',
         village: 'Demo Village',
+        pincode: '411001',
         coordinates: {
           latitude: 18.5204,
           longitude: 73.8567,
@@ -118,14 +119,14 @@ export class DataAggregator {
             new Map(allRecords.map(record => [record.id, record])).values()
           );
           return uniqueRecords;
-        } catch (apiError) {
+        } catch {
           // API failed, use local records
           return localRecords;
         }
       }
       
       return localRecords;
-    } catch (error) {
+    } catch {
       // Soil data is optional, return empty array if not available
       return [];
     }
@@ -152,7 +153,7 @@ export class DataAggregator {
 
       // Return null if API not enabled
       return null;
-    } catch (error) {
+    } catch {
       // Weather data is optional
       return null;
     }
@@ -200,7 +201,7 @@ export class DataAggregator {
         lastUpdated: new Date(),
         source: 'Government Market API',
       };
-    } catch (error) {
+    } catch {
       // Market data is optional
       return null;
     }

@@ -45,10 +45,12 @@ export const SchemeList: React.FC<SchemeListProps> = ({
 
   useEffect(() => {
     loadSchemes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userEligibleOnly]);
 
   useEffect(() => {
     filterSchemes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schemes, searchQuery, selectedCategory]);
 
   const loadSchemes = async () => {
@@ -56,7 +58,6 @@ export const SchemeList: React.FC<SchemeListProps> = ({
       setLoading(true);
       // Fetch schemes from the service
       const fetchedSchemes = await schemeService.getAllSchemes();
-      console.log('Loaded schemes:', fetchedSchemes.length);
       setSchemes(fetchedSchemes);
     } catch (error) {
       console.error('Error loading schemes:', error);

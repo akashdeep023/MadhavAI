@@ -45,7 +45,7 @@ export const AlertNotification: React.FC<AlertNotificationProps> = ({
         useNativeDriver: true,
       }).start();
     }
-  }, [visible]);
+  }, [visible, fadeAnim]);
 
   const getPriorityColor = (priority: AlertPriority): string => {
     switch (priority) {

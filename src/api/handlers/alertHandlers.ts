@@ -13,12 +13,23 @@ import {
   AlertType,
 } from '../../types/alert.types';
 
+type APIEvent = {
+  body?: string;
+  pathParameters?: Record<string, string>;
+  queryStringParameters?: Record<string, string>;
+};
+
+type APIResponse = {
+  statusCode: number;
+  body: string;
+};
+
 /**
  * Schedule a new alert
  */
-export async function scheduleAlert(event: any): Promise<any> {
+export async function scheduleAlert(event: APIEvent): Promise<APIResponse> {
   try {
-    const request: AlertScheduleRequest = JSON.parse(event.body);
+    const request: AlertScheduleRequest = JSON.parse(event.body || '{}');
 
     // Validate request
     if (!request.userId || !request.type || !request.title || !request.message || !request.scheduledTime) {
@@ -57,11 +68,11 @@ export async function scheduleAlert(event: any): Promise<any> {
 /**
  * Get alerts for a user
  */
-export async function getUserAlerts(event: any): Promise<any> {
+export async function getUserAlerts(event: APIEvent): Promise<APIResponse> {
   try {
     const userId = event.pathParameters?.userId;
     const days = event.queryStringParameters?.days
-      ? parseInt(event.queryStringParameters.days)
+      ? parseInt(event.queryStringParameters.days, 10)
       : 7;
 
     if (!userId) {
@@ -95,7 +106,7 @@ export async function getUserAlerts(event: any): Promise<any> {
 /**
  * Cancel an alert
  */
-export async function cancelAlert(event: any): Promise<any> {
+export async function cancelAlert(event: APIEvent): Promise<APIResponse> {
   try {
     const alertId = event.pathParameters?.alertId;
 
@@ -129,7 +140,7 @@ export async function cancelAlert(event: any): Promise<any> {
 /**
  * Mark alert as read
  */
-export async function markAlertAsRead(event: any): Promise<any> {
+export async function markAlertAsRead(event: APIEvent): Promise<APIResponse> {
   try {
     const alertId = event.pathParameters?.alertId;
 
@@ -163,7 +174,7 @@ export async function markAlertAsRead(event: any): Promise<any> {
 /**
  * Get alert preferences for a user
  */
-export async function getAlertPreferences(event: any): Promise<any> {
+export async function getAlertPreferences(event: APIEvent): Promise<APIResponse> {
   try {
     const userId = event.pathParameters?.userId;
 
@@ -195,10 +206,10 @@ export async function getAlertPreferences(event: any): Promise<any> {
 /**
  * Update alert preferences for a user
  */
-export async function updateAlertPreferences(event: any): Promise<any> {
+export async function updateAlertPreferences(event: APIEvent): Promise<APIResponse> {
   try {
     const userId = event.pathParameters?.userId;
-    const preferences: Partial<AlertPreferences> = JSON.parse(event.body);
+    const preferences: Partial<AlertPreferences> = JSON.parse(event.body || '{}');
 
     if (!userId) {
       return {
@@ -230,10 +241,10 @@ export async function updateAlertPreferences(event: any): Promise<any> {
 /**
  * Set quiet hours for a user
  */
-export async function setQuietHours(event: any): Promise<any> {
+export async function setQuietHours(event: APIEvent): Promise<APIResponse> {
   try {
     const userId = event.pathParameters?.userId;
-    const { enabled, start, end } = JSON.parse(event.body);
+    const { enabled, start, end } = JSON.parse(event.body || '{}');
 
     if (!userId) {
       return {
@@ -265,10 +276,10 @@ export async function setQuietHours(event: any): Promise<any> {
 /**
  * Enable/disable specific alert type
  */
-export async function setAlertTypeEnabled(event: any): Promise<any> {
+export async function setAlertTypeEnabled(event: APIEvent): Promise<APIResponse> {
   try {
     const userId = event.pathParameters?.userId;
-    const { alertType, enabled } = JSON.parse(event.body);
+    const { alertType, enabled } = JSON.parse(event.body || '{}');
 
     if (!userId || !alertType) {
       return {
@@ -300,9 +311,9 @@ export async function setAlertTypeEnabled(event: any): Promise<any> {
 /**
  * Schedule crop activity alerts
  */
-export async function scheduleCropActivityAlerts(event: any): Promise<any> {
+export async function scheduleCropActivityAlerts(event: APIEvent): Promise<APIResponse> {
   try {
-    const { userId, cropPlanId, activities } = JSON.parse(event.body);
+    const { userId, cropPlanId, activities } = JSON.parse(event.body || '{}');
 
     if (!userId || !cropPlanId || !activities) {
       return {

@@ -43,7 +43,7 @@ export const LessonBrowser: React.FC<LessonBrowserProps> = ({
       // const response = await trainingService.getLessons(category, language);
       // setLessons(response);
       setLessons([]);
-    } catch (err) {
+    } catch {
       setError('Failed to load lessons');
     } finally {
       setLoading(false);

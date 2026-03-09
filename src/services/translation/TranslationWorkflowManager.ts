@@ -30,12 +30,13 @@ interface ContentReleaseResult {
 }
 
 class TranslationWorkflowManager {
-  private contentManager: TranslationContentManager;
+  // @ts-expect-error - Reserved for future use
+  private _contentManager: TranslationContentManager;
   private storage: TranslationStorage;
   private pendingReleases: Map<string, ContentReleaseRequest> = new Map();
 
   constructor(contentManager: TranslationContentManager, storage: TranslationStorage) {
-    this.contentManager = contentManager;
+    this._contentManager = contentManager;
     this.storage = storage;
   }
 

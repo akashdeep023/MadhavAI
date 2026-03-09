@@ -150,10 +150,12 @@ describe('DataAggregator', () => {
     jest.clearAllMocks();
     
     // Mock profileManager to return the mock profile
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { profileManager } = require('../../profile/ProfileManager');
     profileManager.getProfile.mockResolvedValue(mockProfile);
     
     // Mock soilHealthStorage
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { soilHealthStorage } = require('../../soil/SoilHealthStorage');
     soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([]);
   });
@@ -161,9 +163,11 @@ describe('DataAggregator', () => {
   describe('aggregateData', () => {
     it('should aggregate all data sources successfully', async () => {
       // Enable API for this test
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { config } = require('../../../config/env');
       config.ENABLE_API = true;
       
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { soilHealthStorage } = require('../../soil/SoilHealthStorage');
       soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([mockSoilData]);
       
@@ -229,6 +233,7 @@ describe('DataAggregator', () => {
 
     it('should throw error if user profile fetch fails', async () => {
       // Mock profileManager to return null so it falls back to default
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { profileManager } = require('../../profile/ProfileManager');
       profileManager.getProfile.mockResolvedValue(null);
       
@@ -242,6 +247,7 @@ describe('DataAggregator', () => {
     });
 
     it('should fetch all data in parallel', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { soilHealthStorage } = require('../../soil/SoilHealthStorage');
       soilHealthStorage.getUserSoilHealthRecords.mockResolvedValue([mockSoilData]);
       

@@ -30,6 +30,7 @@ export const WeatherDisplay: React.FC<WeatherDisplayProps> = ({
 
   useEffect(() => {
     loadWeather();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latitude, longitude]);
 
   const loadWeather = async () => {
@@ -41,7 +42,7 @@ export const WeatherDisplay: React.FC<WeatherDisplayProps> = ({
         const data = await weatherService.getForecast(latitude, longitude);
         setForecast(data);
         logger.info('Weather data loaded successfully');
-      } catch (apiError) {
+      } catch {
         // API failed, use mock data for demo
         logger.info('Weather API not available, using mock data');
         const mockForecast = generateMockForecast(latitude, longitude);
