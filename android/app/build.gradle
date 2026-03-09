@@ -109,7 +109,13 @@ android {
             versionNameSuffix "-debug"
         }
         release {
-            signingConfig signingConfigs.release
+            // Use release signing if available, otherwise fall back to debug signing
+            if (project.hasProperty('MADHAVAI_UPLOAD_STORE_FILE')) {
+                signingConfig signingConfigs.release
+            } else {
+                // Fall back to debug signing when release keystore is not configured
+                signingConfig signingConfigs.debug
+            }
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"

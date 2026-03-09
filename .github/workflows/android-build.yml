@@ -68,11 +68,17 @@ jobs:
             ${{ runner.os }}-gradle-
       
       - name: Decode keystore
-        if: github.event_name != 'pull_request' && secrets.ANDROID_KEYSTORE_BASE64 != ''
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+            echo "✅ Keystore decoded successfully"
+          else
+            echo "⚠️  ANDROID_KEYSTORE_BASE64 secret not set. Will use debug signing."
+          fi
       
       - name: Build debug APK (for PRs)
         if: github.event_name == 'pull_request'
@@ -80,15 +86,8 @@ jobs:
           cd android
           ./gradlew assembleDebug
       
-      - name: Build debug APK (missing secrets)
-        if: github.event_name != 'pull_request' && secrets.ANDROID_KEYSTORE_BASE64 == ''
-        run: |
-          echo "⚠️  Keystore secrets not configured. Building debug APK instead."
-          cd android
-          ./gradlew assembleDebug
-      
       - name: Build release AAB and APK
-        if: github.event_name != 'pull_request' && secrets.ANDROID_KEYSTORE_BASE64 != ''
+        if: github.event_name != 'pull_request'
         env:
           MADHAVAI_UPLOAD_STORE_FILE: release.keystore
           MADHAVAI_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -96,10 +95,15 @@ jobs:
           MADHAVAI_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd android
+          if [ -f "app/release.keystore" ]; then
+            echo "✅ Building signed release with keystore"
+          else
+            echo "⚠️  No keystore found. Building with debug signing."
+          fi
           ./gradlew bundleRelease assembleRelease
       
       - name: Upload debug APK artifact
-        if: github.event_name == 'pull_request' || secrets.ANDROID_KEYSTORE_BASE64 == ''
+        if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
@@ -107,7 +111,7 @@ jobs:
           retention-days: 7
       
       - name: Upload release artifacts
-        if: github.event_name != 'pull_request' && secrets.ANDROID_KEYSTORE_BASE64 != ''
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
         with:
           name: app-release
@@ -117,7 +121,8 @@ jobs:
           retention-days: 30
       
       - name: Check APK size
-        if: github.event_name != 'pull_request' && secrets.ANDROID_KEYSTORE_BASE64 != ''
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
         run: |
           echo "📊 Build sizes:"
           ls -lh android/app/build/outputs/bundle/release/app-release.aab
