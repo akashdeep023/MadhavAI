@@ -539,14 +539,15 @@ jobs:
           for func in "${FUNCTIONS[@]}"; do
             FUNCTION_NAME="farmer-platform-${func}-production"
             
-            # Get new version
-            NEW_VERSION=$(aws lambda list-versions-by-function \
+            # Get new version from routing config
+            NEW_VERSION=$(aws lambda get-alias \
               --function-name "$FUNCTION_NAME" \
+              --name live \
               --region ${{ env.AWS_REGION }} \
-              --query 'Versions[-1].Version' \
+              --query 'RoutingConfig.AdditionalVersionWeights | keys(@) | [0]' \
               --output text)
             
-            # Update alias to point to new version with 100% traffic
+            # Update alias to point to new version with 100% traffic (removes routing config)
             aws lambda update-alias \
               --function-name "$FUNCTION_NAME" \
               --name live \
