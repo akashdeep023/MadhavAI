@@ -585,9 +585,10 @@ jobs:
           echo "✅ Rollback complete"
       
       - name: Notify deployment status
-        if: always()
+        if: always() && secrets.SLACK_WEBHOOK_URL != ''
         uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
           status: ${{ job.status }}
           text: 'Production deployment ${{ job.status }}'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
