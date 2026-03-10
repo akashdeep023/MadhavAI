@@ -434,20 +434,14 @@ jobs:
               --output text)
             
             # Update alias with 10% traffic to new version
-            ROUTING_CONFIG=$(cat <<EOF
-{
-  "AdditionalVersionWeights": {
-    "$NEW_VERSION": 0.1
-  }
-}
-EOF
-)
+            echo "{\"AdditionalVersionWeights\":{\"$NEW_VERSION\":0.1}}" > /tmp/routing-config.json
             
             aws lambda update-alias \
               --function-name "$FUNCTION_NAME" \
               --name live \
               --function-version "$CURRENT_VERSION" \
-              --routing-config "$ROUTING_CONFIG" \
+              --routing-config file:///tmp/routing-config.json \
+              --region ${{ env.AWS_REGION }}
               --region ${{ env.AWS_REGION }}
             
             echo "✅ $FUNCTION_NAME: 90% -> v$CURRENT_VERSION, 10% -> v$NEW_VERSION"
@@ -517,20 +511,14 @@ EOF
               --output text)
             
             # Update to 50% traffic
-            ROUTING_CONFIG=$(cat <<EOF
-{
-  "AdditionalVersionWeights": {
-    "$NEW_VERSION": 0.5
-  }
-}
-EOF
-)
+            echo "{\"AdditionalVersionWeights\":{\"$NEW_VERSION\":0.5}}" > /tmp/routing-config.json
             
             aws lambda update-alias \
               --function-name "$FUNCTION_NAME" \
               --name live \
               --function-version "$CURRENT_VERSION" \
-              --routing-config "$ROUTING_CONFIG" \
+              --routing-config file:///tmp/routing-config.json \
+              --region ${{ env.AWS_REGION }}
               --region ${{ env.AWS_REGION }}
             
             echo "✅ $FUNCTION_NAME: 50% -> v$CURRENT_VERSION, 50% -> v$NEW_VERSION"
