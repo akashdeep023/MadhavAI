@@ -442,7 +442,6 @@ jobs:
               --function-version "$CURRENT_VERSION" \
               --routing-config file:///tmp/routing-config.json \
               --region ${{ env.AWS_REGION }}
-              --region ${{ env.AWS_REGION }}
             
             echo "✅ $FUNCTION_NAME: 90% -> v$CURRENT_VERSION, 10% -> v$NEW_VERSION"
           done
@@ -519,7 +518,6 @@ jobs:
               --function-version "$CURRENT_VERSION" \
               --routing-config file:///tmp/routing-config.json \
               --region ${{ env.AWS_REGION }}
-              --region ${{ env.AWS_REGION }}
             
             echo "✅ $FUNCTION_NAME: 50% -> v$CURRENT_VERSION, 50% -> v$NEW_VERSION"
           done
@@ -590,12 +588,4 @@ jobs:
           
           echo "✅ Rollback complete"
       
-      - name: Notify deployment status
-        if: always()
-        continue-on-error: true
-        uses: 8398a7/action-slack@v3
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        with:
-          status: ${{ job.status }}
-          text: 'Production deployment ${{ job.status }}'
+      # Slack notification removed - add SLACK_WEBHOOK_URL secret to enable
