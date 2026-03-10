@@ -409,3 +409,5 @@ For issues or questions:
 - [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 - [API Gateway Documentation](https://docs.aws.amazon.com/apigateway/)
 - [DynamoDB Global Tables](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GlobalTables.html)
+
+
