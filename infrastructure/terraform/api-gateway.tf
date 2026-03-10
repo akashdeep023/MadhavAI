@@ -68,6 +68,91 @@ resource "aws_api_gateway_integration" "auth_post" {
   uri                     = aws_lambda_function.auth.invoke_arn
 }
 
+# Methods and Integrations for Recommendations
+resource "aws_api_gateway_method" "recommendations_get" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.recommendations.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "recommendations_get" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.recommendations.id
+  http_method             = aws_api_gateway_method.recommendations_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.recommendations.invoke_arn
+}
+
+# Methods and Integrations for Schemes
+resource "aws_api_gateway_method" "schemes_get" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.schemes.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "schemes_get" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.schemes.id
+  http_method             = aws_api_gateway_method.schemes_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.schemes.invoke_arn
+}
+
+# Methods and Integrations for Market Prices
+resource "aws_api_gateway_method" "market_prices_get" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.market_prices.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "market_prices_get" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.market_prices.id
+  http_method             = aws_api_gateway_method.market_prices_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.market_prices.invoke_arn
+}
+
+# Methods and Integrations for Alerts
+resource "aws_api_gateway_method" "alerts_get" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.alerts.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "alerts_get" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.alerts.id
+  http_method             = aws_api_gateway_method.alerts_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.alerts.invoke_arn
+}
+
+# Methods and Integrations for Training
+resource "aws_api_gateway_method" "training_get" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.training.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "training_get" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.training.id
+  http_method             = aws_api_gateway_method.training_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.training.invoke_arn
+}
+
 # Lambda permissions for API Gateway
 resource "aws_lambda_permission" "auth" {
   statement_id  = "AllowAPIGatewayInvoke"
@@ -122,7 +207,12 @@ resource "aws_api_gateway_deployment" "main" {
   rest_api_id = aws_api_gateway_rest_api.main.id
   
   depends_on = [
-    aws_api_gateway_integration.auth_post
+    aws_api_gateway_integration.auth_post,
+    aws_api_gateway_integration.recommendations_get,
+    aws_api_gateway_integration.schemes_get,
+    aws_api_gateway_integration.market_prices_get,
+    aws_api_gateway_integration.alerts_get,
+    aws_api_gateway_integration.training_get
   ]
   
   lifecycle {
