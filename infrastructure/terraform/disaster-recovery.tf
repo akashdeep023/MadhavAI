@@ -181,28 +181,31 @@ resource "aws_backup_vault_policy" "backup_region_policy" {
 # Automated Failover Configuration
 # ============================================================================
 
+# NOTE: Failover Lambda function commented out - requires custom implementation
+# Uncomment and create lambda/failover-handler.zip when ready to implement automated failover
+
 # Lambda function for automated failover
-resource "aws_lambda_function" "failover_handler" {
-  filename      = "${path.module}/../../lambda/failover-handler.zip"
-  function_name = "${var.project_name}-failover-handler"
-  role          = aws_iam_role.failover_lambda_role.arn
-  handler       = "index.handler"
-  runtime       = var.lambda_runtime
-  timeout       = 300 # 5 minutes for failover operations
-  
-  environment {
-    variables = {
-      PRIMARY_REGION = var.primary_region
-      BACKUP_REGION  = var.backup_region
-      PROJECT_NAME   = var.project_name
-      ENVIRONMENT    = var.environment
-    }
-  }
-  
-  tags = {
-    Name = "${var.project_name}-failover-handler"
-  }
-}
+# resource "aws_lambda_function" "failover_handler" {
+#   filename      = "${path.module}/../../dist/lambda/failover-handler.zip"
+#   function_name = "${var.project_name}-failover-handler"
+#   role          = aws_iam_role.failover_lambda_role.arn
+#   handler       = "index.handler"
+#   runtime       = var.lambda_runtime
+#   timeout       = 300 # 5 minutes for failover operations
+#   
+#   environment {
+#     variables = {
+#       PRIMARY_REGION = var.primary_region
+#       BACKUP_REGION  = var.backup_region
+#       PROJECT_NAME   = var.project_name
+#       ENVIRONMENT    = var.environment
+#     }
+#   }
+#   
+#   tags = {
+#     Name = "${var.project_name}-failover-handler"
+#   }
+# }
 
 # IAM role for failover Lambda
 resource "aws_iam_role" "failover_lambda_role" {
@@ -275,35 +278,35 @@ resource "aws_iam_role_policy" "failover_lambda_policy" {
 }
 
 # CloudWatch Event Rule to trigger failover on health check failure
-resource "aws_cloudwatch_event_rule" "failover_trigger" {
-  name        = "${var.project_name}-failover-trigger"
-  description = "Trigger automated failover when primary region fails"
-  
-  event_pattern = jsonencode({
-    source      = ["aws.cloudwatch"]
-    detail-type = ["CloudWatch Alarm State Change"]
-    detail = {
-      alarmName = [aws_cloudwatch_metric_alarm.primary_api_health.alarm_name]
-      state = {
-        value = ["ALARM"]
-      }
-    }
-  })
-}
+# resource "aws_cloudwatch_event_rule" "failover_trigger" {
+#   name        = "${var.project_name}-failover-trigger"
+#   description = "Trigger automated failover when primary region fails"
+#   
+#   event_pattern = jsonencode({
+#     source      = ["aws.cloudwatch"]
+#     detail-type = ["CloudWatch Alarm State Change"]
+#     detail = {
+#       alarmName = [aws_cloudwatch_metric_alarm.primary_api_health.alarm_name]
+#       state = {
+#         value = ["ALARM"]
+#       }
+#     }
+#   })
+# }
 
-resource "aws_cloudwatch_event_target" "failover_lambda" {
-  rule      = aws_cloudwatch_event_rule.failover_trigger.name
-  target_id = "FailoverLambda"
-  arn       = aws_lambda_function.failover_handler.arn
-}
+# resource "aws_cloudwatch_event_target" "failover_lambda" {
+#   rule      = aws_cloudwatch_event_rule.failover_trigger.name
+#   target_id = "FailoverLambda"
+#   arn       = aws_lambda_function.failover_handler.arn
+# }
 
-resource "aws_lambda_permission" "allow_cloudwatch_failover" {
-  statement_id  = "AllowExecutionFromCloudWatch"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.failover_handler.function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.failover_trigger.arn
-}
+# resource "aws_lambda_permission" "allow_cloudwatch_failover" {
+#   statement_id  = "AllowExecutionFromCloudWatch"
+#   action        = "lambda:InvokeFunction"
+#   function_name = aws_lambda_function.failover_handler.function_name
+#   principal     = "events.amazonaws.com"
+#   source_arn    = aws_cloudwatch_event_rule.failover_trigger.arn
+# }
 
 # ============================================================================
 # Monitoring and Alerting for DR
@@ -383,28 +386,31 @@ resource "aws_cloudwatch_metric_alarm" "replication_lag" {
 # Recovery Testing Automation
 # ============================================================================
 
+# NOTE: DR test Lambda function commented out - requires custom implementation
+# Uncomment and create lambda/dr-test.zip when ready to implement automated DR testing
+
 # Lambda function for automated DR testing
-resource "aws_lambda_function" "dr_test" {
-  filename      = "${path.module}/../../lambda/dr-test.zip"
-  function_name = "${var.project_name}-dr-test"
-  role          = aws_iam_role.dr_test_lambda_role.arn
-  handler       = "index.handler"
-  runtime       = var.lambda_runtime
-  timeout       = 300
-  
-  environment {
-    variables = {
-      PRIMARY_REGION = var.primary_region
-      BACKUP_REGION  = var.backup_region
-      PROJECT_NAME   = var.project_name
-      ENVIRONMENT    = var.environment
-    }
-  }
-  
-  tags = {
-    Name = "${var.project_name}-dr-test"
-  }
-}
+# resource "aws_lambda_function" "dr_test" {
+#   filename      = "${path.module}/../../dist/lambda/dr-test.zip"
+#   function_name = "${var.project_name}-dr-test"
+#   role          = aws_iam_role.dr_test_lambda_role.arn
+#   handler       = "index.handler"
+#   runtime       = var.lambda_runtime
+#   timeout       = 300
+#   
+#   environment {
+#     variables = {
+#       PRIMARY_REGION = var.primary_region
+#       BACKUP_REGION  = var.backup_region
+#       PROJECT_NAME   = var.project_name
+#       ENVIRONMENT    = var.environment
+#     }
+#   }
+#   
+#   tags = {
+#     Name = "${var.project_name}-dr-test"
+#   }
+# }
 
 # IAM role for DR test Lambda
 resource "aws_iam_role" "dr_test_lambda_role" {
@@ -482,22 +488,22 @@ resource "aws_iam_role_policy" "dr_test_lambda_policy" {
 }
 
 # Schedule monthly DR tests
-resource "aws_cloudwatch_event_rule" "dr_test_schedule" {
-  name                = "${var.project_name}-dr-test-schedule"
-  description         = "Monthly disaster recovery test"
-  schedule_expression = "cron(0 10 1 * ? *)" # First day of month at 10 AM UTC
-}
+# resource "aws_cloudwatch_event_rule" "dr_test_schedule" {
+#   name                = "${var.project_name}-dr-test-schedule"
+#   description         = "Monthly disaster recovery test"
+#   schedule_expression = "cron(0 10 1 * ? *)" # First day of month at 10 AM UTC
+# }
 
-resource "aws_cloudwatch_event_target" "dr_test_lambda" {
-  rule      = aws_cloudwatch_event_rule.dr_test_schedule.name
-  target_id = "DRTestLambda"
-  arn       = aws_lambda_function.dr_test.arn
-}
+# resource "aws_cloudwatch_event_target" "dr_test_lambda" {
+#   rule      = aws_cloudwatch_event_rule.dr_test_schedule.name
+#   target_id = "DRTestLambda"
+#   arn       = aws_lambda_function.dr_test.arn
+# }
 
-resource "aws_lambda_permission" "allow_cloudwatch_dr_test" {
-  statement_id  = "AllowExecutionFromCloudWatch"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.dr_test.function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = aws_cloudwatch_event_rule.dr_test_schedule.arn
-}
+# resource "aws_lambda_permission" "allow_cloudwatch_dr_test" {
+#   statement_id  = "AllowExecutionFromCloudWatch"
+#   action        = "lambda:InvokeFunction"
+#   function_name = aws_lambda_function.dr_test.function_name
+#   principal     = "events.amazonaws.com"
+#   source_arn    = aws_cloudwatch_event_rule.dr_test_schedule.arn
+# }

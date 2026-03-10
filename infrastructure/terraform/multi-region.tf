@@ -134,10 +134,10 @@ resource "aws_s3_bucket_replication_configuration" "content" {
 
 # Route53 Health Check for primary region
 resource "aws_route53_health_check" "primary_api" {
-  fqdn              = replace(replace(aws_api_gateway_stage.main.invoke_url, "https://", ""), "/.*", "")
+  fqdn              = trimsuffix(trimprefix(aws_api_gateway_stage.main.invoke_url, "https://"), "/${aws_api_gateway_stage.main.stage_name}")
   port              = 443
   type              = "HTTPS"
-  resource_path     = "/health"
+  resource_path     = "/${aws_api_gateway_stage.main.stage_name}/health"
   failure_threshold = 3
   request_interval  = 30
   
