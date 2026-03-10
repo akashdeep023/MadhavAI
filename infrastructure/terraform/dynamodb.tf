@@ -4,24 +4,43 @@
 resource "aws_dynamodb_table" "users" {
   name           = "${var.project_name}-users-${var.environment}"
   billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "userId"
+  hash_key       = "mobileNumber"
   stream_enabled = true
   stream_view_type = "NEW_AND_OLD_IMAGES"
-  
-  attribute {
-    name = "userId"
-    type = "S"
-  }
   
   attribute {
     name = "mobileNumber"
     type = "S"
   }
   
+  attribute {
+    name = "authToken"
+    type = "S"
+  }
+  
+  attribute {
+    name = "refreshToken"
+    type = "S"
+  }
+  
+  # GSI for auth token lookup (used in logout)
   global_secondary_index {
-    name            = "MobileNumberIndex"
-    hash_key        = "mobileNumber"
+    name            = "AuthTokenIndex"
+    hash_key        = "authToken"
     projection_type = "ALL"
+  }
+  
+  # GSI for refresh token lookup (used in token refresh)
+  global_secondary_index {
+    name            = "RefreshTokenIndex"
+    hash_key        = "refreshToken"
+    projection_type = "ALL"
+  }
+  
+  # TTL for automatic OTP cleanup
+  ttl {
+    attribute_name = "expiresAt"
+    enabled        = true
   }
   
   point_in_time_recovery {

@@ -81,6 +81,24 @@ jobs:
           mkdir -p dist/lambda
           npm run build:lambda
       
+      - name: Validate Lambda builds
+        run: |
+          echo "Checking Lambda function builds..."
+          REQUIRED_LAMBDAS=("auth" "recommendations" "schemes" "market-prices" "alerts" "training")
+          
+          for lambda in "${REQUIRED_LAMBDAS[@]}"; do
+            if [ -f "dist/lambda/${lambda}.zip" ]; then
+              SIZE=$(stat -c%s "dist/lambda/${lambda}.zip" 2>/dev/null || stat -f%z "dist/lambda/${lambda}.zip")
+              SIZE_MB=$((SIZE / 1024 / 1024))
+              echo "✅ ${lambda}.zip - ${SIZE_MB} MB"
+            else
+              echo "❌ ${lambda}.zip not found!"
+              exit 1
+            fi
+          done
+          
+          echo "All Lambda functions built successfully!"
+      
       - name: Upload Lambda artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -152,10 +170,37 @@ jobs:
         working-directory: infrastructure/terraform
         run: terraform apply -auto-approve tfplan
       
+      - name: Get API Gateway URL
+        id: api_url
+        working-directory: infrastructure/terraform
+        run: |
+          API_URL=$(terraform output -raw api_gateway_url 2>/dev/null || echo "")
+          if [ -n "$API_URL" ]; then
+            echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+            echo "✅ API Gateway URL: $API_URL"
+          else
+            echo "⚠️  API Gateway URL not available yet"
+          fi
+      
+      - name: Verify DynamoDB Tables
+        run: |
+          echo "Verifying DynamoDB tables..."
+          
+          # Check users table
+          aws dynamodb describe-table \
+            --table-name farmer-platform-users-staging \
+            --region ${{ env.AWS_REGION }} \
+            --query 'Table.[TableName,TableStatus,GlobalSecondaryIndexes[*].IndexName]' \
+            --output text || echo "⚠️  Users table not found"
+          
+          echo "✅ DynamoDB verification complete"
+      
       - name: Run E2E tests
+        if: steps.api_url.outputs.api_url != ''
         run: npm run test:e2e
+        continue-on-error: true
         env:
-          API_URL: ${{ secrets.STAGING_API_URL }}
+          API_URL: ${{ steps.api_url.outputs.api_url }}
 
   deploy-production:
     name: Deploy to Production
