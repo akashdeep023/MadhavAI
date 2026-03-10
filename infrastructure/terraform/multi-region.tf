@@ -2,90 +2,12 @@
 # Primary: ap-south-1 (Mumbai)
 # Backup: ap-southeast-1 (Singapore)
 
-# DynamoDB Global Tables for multi-region replication
-resource "aws_dynamodb_global_table" "users" {
-  depends_on = [aws_dynamodb_table.users]
-  
-  name = aws_dynamodb_table.users.name
-  
-  replica {
-    region_name = var.primary_region
-  }
-  
-  replica {
-    region_name = var.backup_region
-  }
-}
+# DynamoDB Global Tables for multi-region replication (Version 2019.11.21)
+# Note: Using aws_dynamodb_table with replica configuration instead of deprecated aws_dynamodb_global_table
+# The global table v2 is configured directly in dynamodb.tf with replica blocks
 
-resource "aws_dynamodb_global_table" "crop_plans" {
-  depends_on = [aws_dynamodb_table.crop_plans]
-  
-  name = aws_dynamodb_table.crop_plans.name
-  
-  replica {
-    region_name = var.primary_region
-  }
-  
-  replica {
-    region_name = var.backup_region
-  }
-}
-
-resource "aws_dynamodb_global_table" "schemes" {
-  depends_on = [aws_dynamodb_table.schemes]
-  
-  name = aws_dynamodb_table.schemes.name
-  
-  replica {
-    region_name = var.primary_region
-  }
-  
-  replica {
-    region_name = var.backup_region
-  }
-}
-
-resource "aws_dynamodb_global_table" "market_prices" {
-  depends_on = [aws_dynamodb_table.market_prices]
-  
-  name = aws_dynamodb_table.market_prices.name
-  
-  replica {
-    region_name = var.primary_region
-  }
-  
-  replica {
-    region_name = var.backup_region
-  }
-}
-
-resource "aws_dynamodb_global_table" "alerts" {
-  depends_on = [aws_dynamodb_table.alerts]
-  
-  name = aws_dynamodb_table.alerts.name
-  
-  replica {
-    region_name = var.primary_region
-  }
-  
-  replica {
-    region_name = var.backup_region
-  }
-}
-
-resource "aws_dynamodb_global_table" "training_lessons" {
-  depends_on = [aws_dynamodb_table.training_lessons]
-  
-  name = aws_dynamodb_table.training_lessons.name
-  
-  replica {
-    region_name = var.primary_region
-  }
-  
-  replica {
-    region_name = var.backup_region
-  }
-}
+# Global tables v2 (2019.11.21) are configured in dynamodb.tf with replica blocks
+# This provides better performance and is the recommended approach
 
 # S3 Bucket in backup region
 resource "aws_s3_bucket" "content_backup_region" {
@@ -212,7 +134,7 @@ resource "aws_s3_bucket_replication_configuration" "content" {
 
 # Route53 Health Check for primary region
 resource "aws_route53_health_check" "primary_api" {
-  fqdn              = replace(aws_api_gateway_stage.main.invoke_url, "https://", "")
+  fqdn              = replace(replace(aws_api_gateway_stage.main.invoke_url, "https://", ""), "/.*", "")
   port              = 443
   type              = "HTTPS"
   resource_path     = "/health"

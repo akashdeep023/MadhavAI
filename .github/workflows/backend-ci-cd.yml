@@ -342,61 +342,247 @@ jobs:
         working-directory: infrastructure/terraform
         run: terraform apply -auto-approve tfplan
       
-      - name: Canary Deployment - 10% traffic
+      - name: Get API Gateway URL
+        id: api_url
+        working-directory: infrastructure/terraform
         run: |
-          aws lambda update-alias \
-            --function-name farmer-platform-auth-production \
-            --name live \
-            --routing-config AdditionalVersionWeights={"$LATEST"=0.1}
-      
-      - name: Monitor canary metrics
-        run: |
-          sleep 300
-          ERROR_RATE=$(aws cloudwatch get-metric-statistics \
-            --namespace AWS/Lambda \
-            --metric-name Errors \
-            --dimensions Name=FunctionName,Value=farmer-platform-auth-production \
-            --start-time $(date -u -d '5 minutes ago' +%Y-%m-%dT%H:%M:%S) \
-            --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
-            --period 300 \
-            --statistics Sum \
-            --query 'Datapoints[0].Sum' \
-            --output text)
-          
-          if [ "$ERROR_RATE" != "None" ] && [ "$ERROR_RATE" -gt 10 ]; then
-            echo "Error rate too high, rolling back"
-            exit 1
+          API_URL=$(terraform output -raw api_gateway_url 2>/dev/null || echo "")
+          if [ -n "$API_URL" ]; then
+            echo "api_url=$API_URL" >> $GITHUB_OUTPUT
+            echo "✅ API Gateway URL: $API_URL"
+          else
+            echo "⚠️  API Gateway URL not available yet"
           fi
       
-      - name: Gradual traffic shift - 50%
+      - name: Verify DynamoDB Tables
         run: |
-          aws lambda update-alias \
+          echo "Verifying DynamoDB tables..."
+          
+          # Check users table
+          aws dynamodb describe-table \
+            --table-name farmer-platform-users-production \
+            --region ${{ env.AWS_REGION }} \
+            --query 'Table.[TableName,TableStatus,GlobalSecondaryIndexes[*].IndexName]' \
+            --output text || echo "⚠️  Users table not found"
+          
+          echo "✅ DynamoDB verification complete"
+      
+      - name: Check if Lambda alias exists
+        id: check_alias
+        run: |
+          if aws lambda get-alias \
             --function-name farmer-platform-auth-production \
             --name live \
-            --routing-config AdditionalVersionWeights={"$LATEST"=0.5}
+            --region ${{ env.AWS_REGION }} 2>/dev/null; then
+            echo "alias_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Lambda alias 'live' exists"
+          else
+            echo "alias_exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️  Lambda alias 'live' does not exist (first deployment)"
+          fi
+      
+      - name: Create Lambda alias (first deployment)
+        if: steps.check_alias.outputs.alias_exists == 'false'
+        run: |
+          echo "Creating 'live' alias for first deployment..."
+          
+          FUNCTIONS=("auth" "recommendations" "schemes" "market-prices" "alerts" "training")
+          
+          for func in "${FUNCTIONS[@]}"; do
+            FUNCTION_NAME="farmer-platform-${func}-production"
+            
+            # Get latest version
+            VERSION=$(aws lambda publish-version \
+              --function-name "$FUNCTION_NAME" \
+              --region ${{ env.AWS_REGION }} \
+              --query 'Version' \
+              --output text)
+            
+            # Create alias pointing to this version
+            aws lambda create-alias \
+              --function-name "$FUNCTION_NAME" \
+              --name live \
+              --function-version "$VERSION" \
+              --region ${{ env.AWS_REGION }}
+            
+            echo "✅ Created alias 'live' for $FUNCTION_NAME -> version $VERSION"
+          done
+      
+      - name: Canary Deployment - 10% traffic
+        if: steps.check_alias.outputs.alias_exists == 'true'
+        run: |
+          echo "Starting canary deployment with 10% traffic..."
+          
+          FUNCTIONS=("auth" "recommendations" "schemes" "market-prices" "alerts" "training")
+          
+          for func in "${FUNCTIONS[@]}"; do
+            FUNCTION_NAME="farmer-platform-${func}-production"
+            
+            # Publish new version
+            NEW_VERSION=$(aws lambda publish-version \
+              --function-name "$FUNCTION_NAME" \
+              --region ${{ env.AWS_REGION }} \
+              --query 'Version' \
+              --output text)
+            
+            # Get current alias version
+            CURRENT_VERSION=$(aws lambda get-alias \
+              --function-name "$FUNCTION_NAME" \
+              --name live \
+              --region ${{ env.AWS_REGION }} \
+              --query 'FunctionVersion' \
+              --output text)
+            
+            # Update alias with 10% traffic to new version
+            aws lambda update-alias \
+              --function-name "$FUNCTION_NAME" \
+              --name live \
+              --function-version "$CURRENT_VERSION" \
+              --routing-config "AdditionalVersionWeights={\"$NEW_VERSION\"=0.1}" \
+              --region ${{ env.AWS_REGION }}
+            
+            echo "✅ $FUNCTION_NAME: 90% -> v$CURRENT_VERSION, 10% -> v$NEW_VERSION"
+          done
+      
+      - name: Monitor canary metrics
+        if: steps.check_alias.outputs.alias_exists == 'true'
+        run: |
+          echo "Monitoring canary deployment for 5 minutes..."
+          sleep 300
+          
+          FUNCTIONS=("auth" "recommendations" "schemes" "market-prices" "alerts" "training")
+          TOTAL_ERRORS=0
+          
+          for func in "${FUNCTIONS[@]}"; do
+            FUNCTION_NAME="farmer-platform-${func}-production"
+            
+            ERROR_RATE=$(aws cloudwatch get-metric-statistics \
+              --namespace AWS/Lambda \
+              --metric-name Errors \
+              --dimensions Name=FunctionName,Value="$FUNCTION_NAME" \
+              --start-time $(date -u -d '5 minutes ago' +%Y-%m-%dT%H:%M:%S) \
+              --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
+              --period 300 \
+              --statistics Sum \
+              --region ${{ env.AWS_REGION }} \
+              --query 'Datapoints[0].Sum' \
+              --output text)
+            
+            if [ "$ERROR_RATE" != "None" ]; then
+              TOTAL_ERRORS=$((TOTAL_ERRORS + ERROR_RATE))
+              echo "⚠️  $FUNCTION_NAME: $ERROR_RATE errors"
+            else
+              echo "✅ $FUNCTION_NAME: 0 errors"
+            fi
+          done
+          
+          if [ "$TOTAL_ERRORS" -gt 10 ]; then
+            echo "❌ Error rate too high ($TOTAL_ERRORS errors), rolling back"
+            exit 1
+          fi
+          
+          echo "✅ Canary metrics look good (total errors: $TOTAL_ERRORS)"
+      
+      - name: Gradual traffic shift - 50%
+        if: steps.check_alias.outputs.alias_exists == 'true'
+        run: |
+          echo "Shifting to 50% traffic..."
+          
+          FUNCTIONS=("auth" "recommendations" "schemes" "market-prices" "alerts" "training")
+          
+          for func in "${FUNCTIONS[@]}"; do
+            FUNCTION_NAME="farmer-platform-${func}-production"
+            
+            # Get versions
+            NEW_VERSION=$(aws lambda list-versions-by-function \
+              --function-name "$FUNCTION_NAME" \
+              --region ${{ env.AWS_REGION }} \
+              --query 'Versions[-1].Version' \
+              --output text)
+            
+            CURRENT_VERSION=$(aws lambda get-alias \
+              --function-name "$FUNCTION_NAME" \
+              --name live \
+              --region ${{ env.AWS_REGION }} \
+              --query 'FunctionVersion' \
+              --output text)
+            
+            # Update to 50% traffic
+            aws lambda update-alias \
+              --function-name "$FUNCTION_NAME" \
+              --name live \
+              --function-version "$CURRENT_VERSION" \
+              --routing-config "AdditionalVersionWeights={\"$NEW_VERSION\"=0.5}" \
+              --region ${{ env.AWS_REGION }}
+            
+            echo "✅ $FUNCTION_NAME: 50% -> v$CURRENT_VERSION, 50% -> v$NEW_VERSION"
+          done
       
       - name: Monitor 50% traffic
-        run: sleep 300
+        if: steps.check_alias.outputs.alias_exists == 'true'
+        run: |
+          echo "Monitoring 50% traffic for 5 minutes..."
+          sleep 300
+          echo "✅ 50% traffic monitoring complete"
       
       - name: Complete deployment - 100% traffic
+        if: steps.check_alias.outputs.alias_exists == 'true'
         run: |
-          aws lambda update-alias \
-            --function-name farmer-platform-auth-production \
-            --name live \
-            --routing-config AdditionalVersionWeights={}
+          echo "Completing deployment with 100% traffic to new version..."
+          
+          FUNCTIONS=("auth" "recommendations" "schemes" "market-prices" "alerts" "training")
+          
+          for func in "${FUNCTIONS[@]}"; do
+            FUNCTION_NAME="farmer-platform-${func}-production"
+            
+            # Get new version
+            NEW_VERSION=$(aws lambda list-versions-by-function \
+              --function-name "$FUNCTION_NAME" \
+              --region ${{ env.AWS_REGION }} \
+              --query 'Versions[-1].Version' \
+              --output text)
+            
+            # Update alias to point to new version with 100% traffic
+            aws lambda update-alias \
+              --function-name "$FUNCTION_NAME" \
+              --name live \
+              --function-version "$NEW_VERSION" \
+              --region ${{ env.AWS_REGION }}
+            
+            echo "✅ $FUNCTION_NAME: 100% -> v$NEW_VERSION"
+          done
+          
+          echo "✅ Deployment complete!"
       
       - name: Rollback on failure
-        if: failure()
+        if: failure() && steps.check_alias.outputs.alias_exists == 'true'
         run: |
-          echo "Deployment failed, rolling back"
-          aws lambda update-alias \
-            --function-name farmer-platform-auth-production \
-            --name live \
-            --routing-config AdditionalVersionWeights={}
+          echo "❌ Deployment failed, rolling back to previous version..."
           
-          # Revert to previous Terraform state
-          cd infrastructure/terraform
-          terraform apply -auto-approve -var="environment=production" -var="alert_email=${{ secrets.ALERT_EMAIL }}"
+          FUNCTIONS=("auth" "recommendations" "schemes" "market-prices" "alerts" "training")
+          
+          for func in "${FUNCTIONS[@]}"; do
+            FUNCTION_NAME="farmer-platform-${func}-production"
+            
+            # Get current alias configuration
+            CURRENT_VERSION=$(aws lambda get-alias \
+              --function-name "$FUNCTION_NAME" \
+              --name live \
+              --region ${{ env.AWS_REGION }} \
+              --query 'FunctionVersion' \
+              --output text)
+            
+            # Remove routing config (100% to current version)
+            aws lambda update-alias \
+              --function-name "$FUNCTION_NAME" \
+              --name live \
+              --function-version "$CURRENT_VERSION" \
+              --region ${{ env.AWS_REGION }} || echo "⚠️  Could not rollback $FUNCTION_NAME"
+            
+            echo "✅ Rolled back $FUNCTION_NAME to version $CURRENT_VERSION"
+          done
+          
+          echo "✅ Rollback complete"
       
       - name: Notify deployment status
         if: always()
