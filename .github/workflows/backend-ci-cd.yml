@@ -539,19 +539,29 @@ jobs:
           for func in "${FUNCTIONS[@]}"; do
             FUNCTION_NAME="farmer-platform-${func}-production"
             
-            # Get new version from routing config
-            NEW_VERSION=$(aws lambda get-alias \
+            # Get the new version from routing config
+            ALIAS_INFO=$(aws lambda get-alias \
               --function-name "$FUNCTION_NAME" \
               --name live \
-              --region ${{ env.AWS_REGION }} \
-              --query 'RoutingConfig.AdditionalVersionWeights | keys(@) | [0]' \
-              --output text)
+              --region ${{ env.AWS_REGION }})
             
-            # Update alias to point to new version with 100% traffic (removes routing config)
+            # Extract new version from AdditionalVersionWeights
+            NEW_VERSION=$(echo "$ALIAS_INFO" | jq -r '.RoutingConfig.AdditionalVersionWeights | keys[0]')
+            
+            # If no routing config, get current version (already at 100%)
+            if [ "$NEW_VERSION" == "null" ] || [ -z "$NEW_VERSION" ]; then
+              echo "⚠️  $FUNCTION_NAME: Already at 100%, skipping"
+              continue
+            fi
+            
+            # Update alias to new version with empty routing config (100% traffic)
+            echo '{}' > /tmp/empty-routing-config.json
+            
             aws lambda update-alias \
               --function-name "$FUNCTION_NAME" \
               --name live \
               --function-version "$NEW_VERSION" \
+              --routing-config file:///tmp/empty-routing-config.json \
               --region ${{ env.AWS_REGION }}
             
             echo "✅ $FUNCTION_NAME: 100% -> v$NEW_VERSION"
