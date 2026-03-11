@@ -100,6 +100,18 @@ resource "aws_iam_role_policy" "lambda_policy" {
           "sns:Publish"
         ]
         Resource = aws_sns_topic.alerts.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sns:Publish"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "sns:Protocol" = "sms"
+          }
+        }
       }
     ]
   })

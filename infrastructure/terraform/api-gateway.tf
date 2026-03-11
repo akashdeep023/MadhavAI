@@ -21,6 +21,31 @@ resource "aws_api_gateway_resource" "auth" {
   path_part   = "auth"
 }
 
+# Auth sub-resources
+resource "aws_api_gateway_resource" "auth_send_otp" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.auth.id
+  path_part   = "send-otp"
+}
+
+resource "aws_api_gateway_resource" "auth_verify_otp" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.auth.id
+  path_part   = "verify-otp"
+}
+
+resource "aws_api_gateway_resource" "auth_refresh_token" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.auth.id
+  path_part   = "refresh-token"
+}
+
+resource "aws_api_gateway_resource" "auth_logout" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.auth.id
+  path_part   = "logout"
+}
+
 resource "aws_api_gateway_resource" "recommendations" {
   rest_api_id = aws_api_gateway_rest_api.main.id
   parent_id   = aws_api_gateway_rest_api.main.root_resource_id
@@ -51,18 +76,69 @@ resource "aws_api_gateway_resource" "training" {
   path_part   = "training"
 }
 
-# Methods and Integrations for Auth
-resource "aws_api_gateway_method" "auth_post" {
+# Methods and Integrations for Auth - Send OTP
+resource "aws_api_gateway_method" "auth_send_otp_post" {
   rest_api_id   = aws_api_gateway_rest_api.main.id
-  resource_id   = aws_api_gateway_resource.auth.id
+  resource_id   = aws_api_gateway_resource.auth_send_otp.id
   http_method   = "POST"
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "auth_post" {
+resource "aws_api_gateway_integration" "auth_send_otp_post" {
   rest_api_id             = aws_api_gateway_rest_api.main.id
-  resource_id             = aws_api_gateway_resource.auth.id
-  http_method             = aws_api_gateway_method.auth_post.http_method
+  resource_id             = aws_api_gateway_resource.auth_send_otp.id
+  http_method             = aws_api_gateway_method.auth_send_otp_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.auth.invoke_arn
+}
+
+# Methods and Integrations for Auth - Verify OTP
+resource "aws_api_gateway_method" "auth_verify_otp_post" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.auth_verify_otp.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "auth_verify_otp_post" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.auth_verify_otp.id
+  http_method             = aws_api_gateway_method.auth_verify_otp_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.auth.invoke_arn
+}
+
+# Methods and Integrations for Auth - Refresh Token
+resource "aws_api_gateway_method" "auth_refresh_token_post" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.auth_refresh_token.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "auth_refresh_token_post" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.auth_refresh_token.id
+  http_method             = aws_api_gateway_method.auth_refresh_token_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.auth.invoke_arn
+}
+
+# Methods and Integrations for Auth - Logout
+resource "aws_api_gateway_method" "auth_logout_post" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.auth_logout.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "auth_logout_post" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.auth_logout.id
+  http_method             = aws_api_gateway_method.auth_logout_post.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.auth.invoke_arn
@@ -207,7 +283,10 @@ resource "aws_api_gateway_deployment" "main" {
   rest_api_id = aws_api_gateway_rest_api.main.id
   
   depends_on = [
-    aws_api_gateway_integration.auth_post,
+    aws_api_gateway_integration.auth_send_otp_post,
+    aws_api_gateway_integration.auth_verify_otp_post,
+    aws_api_gateway_integration.auth_refresh_token_post,
+    aws_api_gateway_integration.auth_logout_post,
     aws_api_gateway_integration.recommendations_get,
     aws_api_gateway_integration.schemes_get,
     aws_api_gateway_integration.market_prices_get,
