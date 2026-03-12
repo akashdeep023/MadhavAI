@@ -19,10 +19,8 @@ resource "aws_lambda_function" "auth" {
     }
   }
   
-  vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-    security_group_ids = [aws_security_group.lambda.id]
-  }
+  # VPC config removed - Lambda doesn't need VPC to access DynamoDB/SNS
+  # Keeping Lambda outside VPC prevents timeout issues
   
   tracing_config {
     mode = var.enable_xray ? "Active" : "PassThrough"
@@ -50,11 +48,6 @@ resource "aws_lambda_function" "recommendations" {
       USERS_TABLE        = aws_dynamodb_table.users.name
       CROP_PLANS_TABLE   = aws_dynamodb_table.crop_plans.name
     }
-  }
-  
-  vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-    security_group_ids = [aws_security_group.lambda.id]
   }
   
   tracing_config {
@@ -85,11 +78,6 @@ resource "aws_lambda_function" "schemes" {
     }
   }
   
-  vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-    security_group_ids = [aws_security_group.lambda.id]
-  }
-  
   tracing_config {
     mode = var.enable_xray ? "Active" : "PassThrough"
   }
@@ -115,11 +103,6 @@ resource "aws_lambda_function" "market_prices" {
       ENVIRONMENT         = var.environment
       MARKET_PRICES_TABLE = aws_dynamodb_table.market_prices.name
     }
-  }
-  
-  vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-    security_group_ids = [aws_security_group.lambda.id]
   }
   
   tracing_config {
@@ -150,11 +133,6 @@ resource "aws_lambda_function" "alerts" {
     }
   }
   
-  vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-    security_group_ids = [aws_security_group.lambda.id]
-  }
-  
   tracing_config {
     mode = var.enable_xray ? "Active" : "PassThrough"
   }
@@ -183,15 +161,10 @@ resource "aws_lambda_function" "training" {
     }
   }
   
-  vpc_config {
-    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-    security_group_ids = [aws_security_group.lambda.id]
-  }
-  
   tracing_config {
     mode = var.enable_xray ? "Active" : "PassThrough"
   }
-  
+    -d '{"mobileNumber":"6207524516"}'
   tags = {
     Name = "${var.project_name}-training"
   }
