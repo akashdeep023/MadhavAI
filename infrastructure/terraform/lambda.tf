@@ -164,7 +164,7 @@ resource "aws_lambda_function" "training" {
   tracing_config {
     mode = var.enable_xray ? "Active" : "PassThrough"
   }
-    -d '{"mobileNumber":"6207524516"}'
+  
   tags = {
     Name = "${var.project_name}-training"
   }
