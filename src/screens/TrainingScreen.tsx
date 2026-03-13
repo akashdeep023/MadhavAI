@@ -4,6 +4,7 @@ import { CategorySelector } from '../components/training/CategorySelector';
 import { LessonBrowser } from '../components/training/LessonBrowser';
 import { LessonPlayer } from '../components/training/LessonPlayer';
 import { LessonCategory } from '../types/training.types';
+import { useTranslation } from '../hooks/useTranslation';
 
 // Mock categories data
 const mockCategories = [
@@ -38,6 +39,7 @@ const mockCategories = [
 ];
 
 export default function TrainingScreen() {
+  const { language } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<LessonCategory | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
 
@@ -73,7 +75,7 @@ export default function TrainingScreen() {
       <View style={styles.container}>
         <LessonBrowser
           category={selectedCategory}
-          language="en"
+          language={language}
           onLessonSelect={handleLessonSelect}
         />
       </View>

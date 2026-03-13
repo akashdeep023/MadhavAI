@@ -279,6 +279,22 @@ class TranslationContentManager {
 
     return report;
   }
+
+  /**
+   * Initialize translation content manager
+   */
+  async initialize(): Promise<void> {
+    await this.preloadLanguages();
+  }
+
+  /**
+   * Preload all required languages
+   */
+  private async preloadLanguages(): Promise<void> {
+    for (const language of this.requiredLanguages) {
+      await this.storage.hasTranslations(language, TranslationCategory.UI);
+    }
+  }
 }
 
 export default TranslationContentManager;

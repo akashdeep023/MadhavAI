@@ -4,14 +4,17 @@ import { AlertList } from '../components/alert/AlertList';
 import { AlertScheduler } from '../services/alert/AlertScheduler';
 import { DatabaseService } from '../services/storage/DatabaseService';
 import { logger } from '../utils/logger';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function AlertsScreen() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadAlerts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadAlerts = async () => {
@@ -23,7 +26,7 @@ export default function AlertsScreen() {
       setAlerts(userAlerts);
     } catch (err) {
       logger.error('Failed to load alerts', err);
-      setError('Failed to load alerts');
+      setError(t('alerts.noAlerts'));
     } finally {
       setLoading(false);
     }

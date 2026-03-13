@@ -11,6 +11,18 @@ import {
 import TranslationStorage from './TranslationStorage';
 import TranslationContentManager from './TranslationContentManager';
 
+import enTranslations from '../../locales/en.json';
+import hiTranslations from '../../locales/hi.json';
+import taTranslations from '../../locales/ta.json';
+import teTranslations from '../../locales/te.json';
+import knTranslations from '../../locales/kn.json';
+import mrTranslations from '../../locales/mr.json';
+import bnTranslations from '../../locales/bn.json';
+import guTranslations from '../../locales/gu.json';
+import paTranslations from '../../locales/pa.json';
+import mlTranslations from '../../locales/ml.json';
+import orTranslations from '../../locales/or.json';
+
 class TranslationLoader {
   private storage: TranslationStorage;
   private contentManager: TranslationContentManager;
@@ -37,9 +49,17 @@ class TranslationLoader {
    */
   private async loadUITranslations(): Promise<void> {
     const uiTranslations: { [key in LanguageCode]?: TranslationContent } = {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      hi: require('./translations/ui.hi.json'),
-      // Other languages would be loaded here
+      en: enTranslations,
+      hi: hiTranslations,
+      ta: taTranslations,
+      te: teTranslations,
+      kn: knTranslations,
+      mr: mrTranslations,
+      bn: bnTranslations,
+      gu: guTranslations,
+      pa: paTranslations,
+      ml: mlTranslations,
+      or: orTranslations,
     };
 
     await this.contentManager.bulkImport(TranslationCategory.UI, uiTranslations, '1.0.0');

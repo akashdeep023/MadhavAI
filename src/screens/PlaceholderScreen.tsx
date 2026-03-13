@@ -5,27 +5,24 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface PlaceholderScreenProps {
-  route: {
-    params?: {
-      title?: string;
-    };
-  };
+  route: { params?: { title?: string } };
   navigation: any;
 }
 
 const PlaceholderScreen: React.FC<PlaceholderScreenProps> = ({ route, navigation }) => {
+  const { t } = useTranslation();
   const title = route.params?.title || 'Feature';
 
   return (
     <View style={styles.container}>
       <Text style={styles.icon}>🚧</Text>
       <Text style={styles.title}>{title}</Text>
-      <Text style={styles.subtitle}>This feature is coming soon!</Text>
-
+      <Text style={styles.subtitle}>{t('settings.comingSoon')}</Text>
       <TouchableOpacity style={styles.button} onPress={() => navigation.goBack()}>
-        <Text style={styles.buttonText}>← Back to Dashboard</Text>
+        <Text style={styles.buttonText}>← {t('common.back')}</Text>
       </TouchableOpacity>
     </View>
   );

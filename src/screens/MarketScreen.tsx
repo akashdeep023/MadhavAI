@@ -3,21 +3,23 @@ import { View, ScrollView, StyleSheet, ActivityIndicator, Text } from 'react-nat
 import { MarketPriceDisplay } from '../components/MarketPriceDisplay';
 import { profileManager } from '../services/profile/ProfileManager';
 import { logger } from '../utils/logger';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function MarketScreen() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [marketData, setMarketData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadMarketData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadMarketData = async () => {
     try {
       setLoading(true);
       const profile = await profileManager.getProfile();
-
       if (profile?.location?.coordinates && profile?.primaryCrops?.length > 0) {
         setMarketData({
           latitude: profile.location.coordinates.latitude,
@@ -25,11 +27,11 @@ export default function MarketScreen() {
           crops: profile.primaryCrops,
         });
       } else {
-        setError('Profile or crop information not available.');
+        setError(t('market.noData'));
       }
     } catch (err) {
       logger.error('Failed to load market data', err);
-      setError('Failed to load market data');
+      setError(t('market.loadFailed'));
     } finally {
       setLoading(false);
     }

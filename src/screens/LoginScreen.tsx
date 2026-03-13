@@ -18,12 +18,14 @@ import {
 } from 'react-native';
 import { authenticationManager } from '../services/auth/AuthenticationManager';
 import { logger } from '../utils/logger';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface LoginScreenProps {
   onLoginSuccess: (userId: string, token: string) => void;
 }
 
 export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
+  const { t } = useTranslation();
   const [mobileNumber, setMobileNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'phone' | 'otp'>('phone');
@@ -48,27 +50,25 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
   const handleSendOTP = async () => {
     if (!mobileNumber || mobileNumber.length !== 10) {
-      Alert.alert('Invalid Number', 'Please enter a valid 10-digit mobile number');
+      Alert.alert(t('auth.invalidNumber'), t('auth.invalidNumberMessage'));
       return;
     }
 
     try {
       setLoading(true);
-      logger.info('Sending OTP to', mobileNumber);
-
       const response = await authenticationManager.sendOTP(mobileNumber);
 
       if (response.success) {
         setStep('otp');
         setAttemptsRemaining(response.attemptsRemaining);
         startTimer(response.expiresAt);
-        Alert.alert('OTP Sent', 'Please check your SMS for the verification code');
+        Alert.alert(t('auth.otpSent'), t('auth.checkSMS'));
       } else {
-        Alert.alert('Error', response.message || 'Failed to send OTP');
+        Alert.alert(t('common.error'), response.message || 'Failed to send OTP');
       }
     } catch (error) {
       logger.error('Failed to send OTP', error);
-      Alert.alert('Error', 'Failed to send OTP. Please try again.');
+      Alert.alert(t('common.error'), t('errors.tryAgain'));
     } finally {
       setLoading(false);
     }
@@ -76,36 +76,27 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
   const handleVerifyOTP = async () => {
     if (!otp || otp.length !== 6) {
-      Alert.alert('Invalid OTP', 'Please enter the 6-digit OTP');
+      Alert.alert(t('auth.invalidOTP'), t('auth.invalidOTPMessage'));
       return;
     }
 
     try {
       setLoading(true);
-      logger.info('Verifying OTP for', mobileNumber);
-
-      // Get device ID (in production, use a proper device ID library)
       const deviceId = `device_${Date.now()}`;
-
       const result = await authenticationManager.verifyOTP(mobileNumber, otp, deviceId);
 
       if (result.success && result.authToken) {
-        logger.info('Login successful');
         onLoginSuccess(result.authToken.userId, result.authToken.token);
       } else {
-        Alert.alert('Verification Failed', result.message);
-
-        // Update attempts remaining
+        Alert.alert(t('auth.verificationFailed'), result.message);
         if (result.message.includes('attempts remaining')) {
           const match = result.message.match(/(\d+) attempts remaining/);
-          if (match) {
-            setAttemptsRemaining(parseInt(match[1], 10));
-          }
+          if (match) setAttemptsRemaining(parseInt(match[1], 10));
         }
       }
     } catch (error) {
       logger.error('Failed to verify OTP', error);
-      Alert.alert('Error', 'Failed to verify OTP. Please try again.');
+      Alert.alert(t('common.error'), t('errors.tryAgain'));
     } finally {
       setLoading(false);
     }
@@ -131,12 +122,12 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.logo}>🌾</Text>
-            <Text style={styles.title}>MADHAV AI</Text>
-            <Text style={styles.subtitle}>Farmer Decision Support Platform</Text>
+            <Text style={styles.title}>{t('app.name')}</Text>
+            <Text style={styles.subtitle}>{t('app.tagline')}</Text>
           </View>
 
           <View style={styles.form}>
-            <Text style={styles.label}>Enter Mobile Number</Text>
+            <Text style={styles.label}>{t('auth.enterMobile')}</Text>
             <View style={styles.phoneInputContainer}>
               <Text style={styles.countryCode}>+91</Text>
               <TextInput
@@ -159,11 +150,11 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>Send OTP</Text>
+                <Text style={styles.buttonText}>{t('auth.sendOTP')}</Text>
               )}
             </TouchableOpacity>
 
-            <Text style={styles.infoText}>We'll send you a 6-digit verification code via SMS</Text>
+            <Text style={styles.infoText}>{t('auth.otpMessage')}</Text>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -178,12 +169,12 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.logo}>🌾</Text>
-          <Text style={styles.title}>Verify OTP</Text>
-          <Text style={styles.subtitle}>Enter the code sent to +91 {mobileNumber}</Text>
+          <Text style={styles.title}>{t('auth.verifyOTP')}</Text>
+          <Text style={styles.subtitle}>+91 {mobileNumber}</Text>
         </View>
 
         <View style={styles.form}>
-          <Text style={styles.label}>Enter OTP</Text>
+          <Text style={styles.label}>{t('auth.verifyOTP')}</Text>
           <TextInput
             style={styles.otpInput}
             placeholder="000000"
@@ -198,13 +189,17 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
           {timer > 0 && (
             <View style={styles.timerContainer}>
-              <Text style={styles.timerText}>⏱️ Code expires in {formatTime(timer)}</Text>
+              <Text style={styles.timerText}>
+                ⏱️ {t('auth.codeExpires')} {formatTime(timer)}
+              </Text>
             </View>
           )}
 
           {attemptsRemaining < 3 && (
             <View style={styles.attemptsContainer}>
-              <Text style={styles.attemptsText}>{attemptsRemaining} attempts remaining</Text>
+              <Text style={styles.attemptsText}>
+                {attemptsRemaining} {t('auth.attemptsRemaining')}
+              </Text>
             </View>
           )}
 
@@ -216,17 +211,17 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Verify & Login</Text>
+              <Text style={styles.buttonText}>{t('auth.verifyOTP')}</Text>
             )}
           </TouchableOpacity>
 
           <View style={styles.resendContainer}>
-            <Text style={styles.resendText}>Didn't receive the code?</Text>
+            <Text style={styles.resendText}>{t('auth.didntReceive')}</Text>
             <TouchableOpacity onPress={handleResendOTP} disabled={loading || timer > 240}>
               <Text
                 style={[styles.resendLink, (loading || timer > 240) && styles.resendLinkDisabled]}
               >
-                Resend OTP
+                {t('auth.resendOTP')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -239,7 +234,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               setTimer(0);
             }}
           >
-            <Text style={styles.backButtonText}>← Change Number</Text>
+            <Text style={styles.backButtonText}>← {t('auth.changeNumber')}</Text>
           </TouchableOpacity>
         </View>
       </View>

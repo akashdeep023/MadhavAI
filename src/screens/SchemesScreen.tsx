@@ -5,8 +5,10 @@ import { SchemeDetail } from '../components/scheme/SchemeDetail';
 import { eligibilityChecker } from '../services/scheme/EligibilityChecker';
 import { profileManager } from '../services/profile/ProfileManager';
 import { logger } from '../utils/logger';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function SchemesScreen() {
+  const { t } = useTranslation();
   const [selectedScheme, setSelectedScheme] = useState<any>(null);
   const [eligibilityResult, setEligibilityResult] = useState<any>(null);
 
@@ -52,7 +54,7 @@ export default function SchemesScreen() {
       <View style={styles.container}>
         <View style={styles.backButtonContainer}>
           <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Text style={styles.backButtonText}>← Back to Schemes</Text>
+            <Text style={styles.backButtonText}>← {t('common.back')}</Text>
           </TouchableOpacity>
         </View>
         <SchemeDetail

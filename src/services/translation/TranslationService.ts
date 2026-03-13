@@ -93,22 +93,21 @@ class TranslationService {
 
   /**
    * Get translation from loaded translations
+   * Keys are like "weather.forecast" - first segment is the top-level JSON key
    */
   private getTranslation(key: TranslationKey, language: LanguageCode): string | null {
-    const [category, ...keyParts] = key.split('.');
-    const translationKey = keyParts.join('.');
-
     const languageTranslations = this.translations.get(language);
     if (!languageTranslations) {
       return null;
     }
 
-    const categoryTranslations = languageTranslations.get(category as TranslationCategory);
-    if (!categoryTranslations) {
+    // The entire JSON is stored under TranslationCategory.UI
+    const uiContent = languageTranslations.get(TranslationCategory.UI);
+    if (!uiContent) {
       return null;
     }
 
-    return this.getNestedValue(categoryTranslations, translationKey);
+    return this.getNestedValue(uiContent, key);
   }
 
   /**

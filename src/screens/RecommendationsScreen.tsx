@@ -12,8 +12,10 @@ import { FertilizerRecommender } from '../services/recommendation/FertilizerReco
 import { SeedRecommender } from '../services/recommendation/SeedRecommender';
 import { FarmingContextBuilder } from '../services/recommendation/FarmingContextBuilder';
 import { logger } from '../utils/logger';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function RecommendationsScreen() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'crop' | 'fertilizer' | 'seed'>('crop');
   const [recommendations, setRecommendations] = useState<any>(null);
@@ -52,7 +54,7 @@ export default function RecommendationsScreen() {
       }
     } catch (err) {
       logger.error('Failed to load recommendations', err);
-      setError('Failed to load recommendations');
+      setError(t('recommendations.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -309,35 +311,32 @@ export default function RecommendationsScreen() {
           style={[styles.tab, activeTab === 'crop' && styles.activeTab]}
           onPress={() => setActiveTab('crop')}
         >
-          <Text style={[styles.tabText, activeTab === 'crop' && styles.activeTabText]}>Crops</Text>
+          <Text style={[styles.tabText, activeTab === 'crop' && styles.activeTabText]}>
+            {t('recommendations.crop')}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'fertilizer' && styles.activeTab]}
           onPress={() => setActiveTab('fertilizer')}
         >
           <Text style={[styles.tabText, activeTab === 'fertilizer' && styles.activeTabText]}>
-            Fertilizer
+            {t('recommendations.fertilizer')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'seed' && styles.activeTab]}
           onPress={() => setActiveTab('seed')}
         >
-          <Text style={[styles.tabText, activeTab === 'seed' && styles.activeTabText]}>Seeds</Text>
+          <Text style={[styles.tabText, activeTab === 'seed' && styles.activeTabText]}>
+            {t('recommendations.seed')}
+          </Text>
         </TouchableOpacity>
       </View>
       <ScrollView style={styles.content}>
-        <Text style={styles.title}>
-          {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Recommendations
-        </Text>
+        <Text style={styles.title}>{t('recommendations.title')}</Text>
         {recommendations && recommendations.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>
-              No {activeTab} recommendations available for the current season.
-            </Text>
-            <Text style={styles.emptySubtext}>
-              Try uploading your soil health data or check back during a different season.
-            </Text>
+            <Text style={styles.emptyText}>{t('recommendations.noData')}</Text>
           </View>
         )}
         {activeTab === 'crop' && renderCropRecommendations()}
