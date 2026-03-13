@@ -37,21 +37,6 @@ This document lists all secret and environment variables used in the project, wh
 | `ANDROID_KEY_ALIAS` | `android/app/build.gradle`<br>`src/config/env.ts` | Key alias in keystore | `madhavai-release-key` |
 | `ANDROID_KEY_PASSWORD` | `android/app/build.gradle`<br>`src/config/env.ts` | Key password | `your_key_password` |
 
-### AWS Amplify Configuration
-
-| Variable | Used In | Purpose | Example Value |
-|----------|---------|---------|---------------|
-| `AWS_ACCESS_KEY_ID` | `src/config/env.ts` | AWS access key | `AKIAIOSFODNN7EXAMPLE` |
-| `AWS_SECRET_ACCESS_KEY` | `src/config/env.ts` | AWS secret key | `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY` |
-| `AWS_REGION` | `src/config/env.ts` | AWS region | `us-east-1` |
-| `AWS_APPSYNC_GRAPHQL_ENDPOINT` | `src/config/env.ts` | AppSync GraphQL endpoint | `https://xxx.appsync-api.us-east-1.amazonaws.com/graphql` |
-| `AWS_APPSYNC_API_KEY` | `src/config/env.ts` | AppSync API key | `da2-xxxxxxxxxxxxxxxxxxxxx` |
-| `AWS_APPSYNC_REGION` | `src/config/env.ts` | AppSync region | `us-east-1` |
-| `AWS_COGNITO_REGION` | `src/config/env.ts` | Cognito region | `us-east-1` |
-| `AWS_COGNITO_USER_POOL_ID` | `src/config/env.ts` | Cognito user pool ID | `us-east-1_xxxxxxxxx` |
-| `AWS_COGNITO_USER_POOL_WEB_CLIENT_ID` | `src/config/env.ts` | Cognito client ID | `xxxxxxxxxxxxxxxxxxxxxxxxxx` |
-| `AWS_COGNITO_IDENTITY_POOL_ID` | `src/config/env.ts` | Cognito identity pool ID | `us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
-
 ### Lambda Function Environment Variables
 
 | Variable | Used In | Purpose | Example Value |
@@ -157,13 +142,6 @@ To encode keystore file:
 ```bash
 base64 -i android/app/release.keystore | pbcopy  # macOS
 base64 -w 0 android/app/release.keystore  # Linux
-```
-
-### 3. AWS Amplify Setup
-
-If using AWS Amplify, run:
-```bash
-amplify pull
 ```
 
 This will generate `src/aws-exports.js` with your AWS configuration.
