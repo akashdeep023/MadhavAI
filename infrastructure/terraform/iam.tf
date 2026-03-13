@@ -50,6 +50,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
           aws_dynamodb_table.alerts.arn,
           aws_dynamodb_table.training_lessons.arn,
           aws_dynamodb_table.soil_health.arn,
+          aws_dynamodb_table.recommendations_cache.arn,
           "${aws_dynamodb_table.users.arn}/index/*",
           "${aws_dynamodb_table.crop_plans.arn}/index/*",
           "${aws_dynamodb_table.schemes.arn}/index/*",

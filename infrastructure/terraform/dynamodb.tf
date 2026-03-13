@@ -283,3 +283,29 @@ resource "aws_dynamodb_table" "soil_health" {
     Name = "${var.project_name}-soil-health"
   }
 }
+
+# Recommendations Cache Table
+resource "aws_dynamodb_table" "recommendations_cache" {
+  name           = "${var.project_name}-recommendations-cache-${var.environment}"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "cacheKey"
+  
+  attribute {
+    name = "cacheKey"
+    type = "S"
+  }
+  
+  # TTL for automatic cache expiration
+  ttl {
+    attribute_name = "expiresAt"
+    enabled        = true
+  }
+  
+  point_in_time_recovery {
+    enabled = true
+  }
+  
+  tags = {
+    Name = "${var.project_name}-recommendations-cache"
+  }
+}

@@ -47,6 +47,9 @@ resource "aws_lambda_function" "recommendations" {
       ENVIRONMENT        = var.environment
       USERS_TABLE        = aws_dynamodb_table.users.name
       CROP_PLANS_TABLE   = aws_dynamodb_table.crop_plans.name
+      SOIL_HEALTH_TABLE  = aws_dynamodb_table.soil_health.name
+      CACHE_TABLE        = aws_dynamodb_table.recommendations_cache.name
+      ENABLE_CACHE       = "true"
     }
   }
   

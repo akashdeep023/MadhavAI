@@ -268,8 +268,8 @@ export const SoilHealthDisplay: React.FC<SoilHealthDisplayProps> = ({ userId, on
                               imp.priority === 'high'
                                 ? '#ef4444'
                                 : imp.priority === 'medium'
-                                  ? '#f59e0b'
-                                  : '#10b981',
+                                ? '#f59e0b'
+                                : '#10b981',
                           },
                         ]}
                       >

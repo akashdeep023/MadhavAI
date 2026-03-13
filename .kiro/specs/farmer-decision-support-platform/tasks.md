@@ -296,7 +296,7 @@ The implementation follows an incremental approach where each task builds on pre
     - Ensure recommendations complete within 5 seconds
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 16.2_
   
-  - [ ] 9.3.1 Integrate AWS Bedrock SDK for AI-powered crop recommendations
+  - [x] 9.3.1 Integrate AWS Bedrock SDK for AI-powered crop recommendations
     - Install and configure AWS Bedrock SDK in recommendations Lambda
     - Replace mock/rule-based logic with Bedrock API calls
     - Implement prompt engineering for crop recommendation context
@@ -304,7 +304,7 @@ The implementation follows an incremental approach where each task builds on pre
     - Configure Bedrock model selection (Claude/Titan) based on use case
     - _Requirements: 16.1, 16.2, 7.1, 3.1, 4.1_
   
-  - [ ] 9.3.2 Optimize Bedrock integration for performance
+  - [x] 9.3.2 Optimize Bedrock integration for performance
     - Implement request batching for multiple recommendations
     - Add response caching for common recommendation scenarios
     - Configure timeout and retry logic for Bedrock API calls
