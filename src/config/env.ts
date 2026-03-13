@@ -71,36 +71,3 @@ const configs: Record<Environment, EnvConfig> = {
 
 export const config: EnvConfig = configs[ENV];
 export const environment: Environment = ENV;
-
-// Export build secrets for Android (only available in native code)
-export const buildSecrets = {
-  ANDROID_KEYSTORE_PASSWORD: Config.ANDROID_KEYSTORE_PASSWORD,
-  ANDROID_KEY_ALIAS: Config.ANDROID_KEY_ALIAS,
-  ANDROID_KEY_PASSWORD: Config.ANDROID_KEY_PASSWORD,
-};
-
-// Export AWS configuration (for Amplify)
-export const awsConfig = {
-  AWS_ACCESS_KEY_ID: Config.AWS_ACCESS_KEY_ID,
-  AWS_SECRET_ACCESS_KEY: Config.AWS_SECRET_ACCESS_KEY,
-  AWS_REGION: Config.AWS_REGION || 'us-east-1',
-  AWS_APPSYNC_GRAPHQL_ENDPOINT: Config.AWS_APPSYNC_GRAPHQL_ENDPOINT,
-  AWS_APPSYNC_API_KEY: Config.AWS_APPSYNC_API_KEY,
-  AWS_APPSYNC_REGION: Config.AWS_APPSYNC_REGION || 'us-east-1',
-  AWS_COGNITO_REGION: Config.AWS_COGNITO_REGION || 'us-east-1',
-  AWS_COGNITO_USER_POOL_ID: Config.AWS_COGNITO_USER_POOL_ID,
-  AWS_COGNITO_USER_POOL_WEB_CLIENT_ID: Config.AWS_COGNITO_USER_POOL_WEB_CLIENT_ID,
-  AWS_COGNITO_IDENTITY_POOL_ID: Config.AWS_COGNITO_IDENTITY_POOL_ID,
-};
-
-// Export Lambda environment variables (for backend services)
-export const lambdaConfig = {
-  PRIMARY_REGION: Config.PRIMARY_REGION || 'us-east-1',
-  BACKUP_REGION: Config.BACKUP_REGION || 'us-west-2',
-  PROJECT_NAME: Config.PROJECT_NAME || 'madhavai',
-  ENVIRONMENT: Config.ENVIRONMENT || 'development',
-  SNS_TOPIC_ARN: Config.SNS_TOPIC_ARN,
-  LESSONS_TABLE: Config.LESSONS_TABLE || 'farmer-platform-lessons',
-  PROGRESS_TABLE: Config.PROGRESS_TABLE || 'farmer-platform-learning-progress',
-  CONTENT_BUCKET: Config.CONTENT_BUCKET || 'farmer-platform-training-content',
-};
