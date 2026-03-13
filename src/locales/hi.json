@@ -56,6 +56,7 @@
   },
   "dashboard": {
     "title": "डैशबोर्ड",
+    "welcome": "स्वागत है {name}",
     "weather": "मौसम",
     "alerts": "अलर्ट",
     "quickActions": "त्वरित कार्य",
@@ -195,6 +196,7 @@
     "comingSoon": "जल्द आ रहा है"
   },
   "common": {
+    "greeting": "नमस्ते",
     "retry": "पुनः प्रयास करें",
     "back": "वापस",
     "loading": "लोड हो रहा है...",

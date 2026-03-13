@@ -10,7 +10,7 @@ import {
   TranslationCategory,
 } from '../../types/translation.types';
 import { SUPPORTED_LANGUAGES } from '../../config/constants';
-import TranslationStorage from './TranslationStorage.ts';
+import TranslationStorage from './TranslationStorage';
 
 class TranslationService {
   private currentLanguage: LanguageCode = 'hi';
@@ -93,7 +93,7 @@ class TranslationService {
 
   /**
    * Get translation from loaded translations
-   * Keys are like "weather.forecast" - first segment is the top-level JSON key
+   * Keys can be "common.yes" or "ui.common.yes" - the "ui." prefix is stripped automatically
    */
   private getTranslation(key: TranslationKey, language: LanguageCode): string | null {
     const languageTranslations = this.translations.get(language);
@@ -107,7 +107,9 @@ class TranslationService {
       return null;
     }
 
-    return this.getNestedValue(uiContent, key);
+    // Strip "ui." prefix if present (keys may be passed as "ui.common.yes" or "common.yes")
+    const lookupKey = key.startsWith('ui.') ? key.slice(3) : key;
+    return this.getNestedValue(uiContent, lookupKey);
   }
 
   /**
