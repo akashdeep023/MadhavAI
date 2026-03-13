@@ -244,7 +244,7 @@ The implementation follows an incremental approach where each task builds on pre
     - Store parsed results in DynamoDB
     - _Requirements: 10.1, 10.2_
   
-  - [ ] 8.8 Integrate AWS Bedrock for intelligent soil analysis
+  - [x] 8.8 Integrate AWS Bedrock for intelligent soil analysis
     - Add Bedrock SDK to soil-analysis Lambda
     - Implement prompt engineering for soil health interpretation
     - Use Bedrock to generate simple language explanations
@@ -253,7 +253,7 @@ The implementation follows an incremental approach where each task builds on pre
     - Implement fallback to rule-based analysis if Bedrock fails
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
   
-  - [ ] 8.9 Create soil health image upload API endpoints
+  - [x] 8.9 Create soil health image upload API endpoints
     - Implement API Gateway endpoint for presigned URL generation
     - Create POST endpoint to trigger image processing
     - Add GET endpoint to retrieve analysis results
@@ -261,7 +261,7 @@ The implementation follows an incremental approach where each task builds on pre
     - Add rate limiting to prevent abuse
     - _Requirements: 10.1_
   
-  - [ ] 8.10 Update mobile app for backend integration
+  - [x] 8.10 Update mobile app for backend integration
     - Connect image upload UI to new API endpoints
     - Implement upload progress indicator
     - Add processing status polling with loading states

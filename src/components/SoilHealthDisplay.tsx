@@ -211,6 +211,91 @@ export const SoilHealthDisplay: React.FC<SoilHealthDisplayProps> = ({ userId, on
         </View>
       )}
 
+      {/* AI Analysis (from AWS Bedrock) */}
+      {selectedRecord?.aiAnalysis && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>AI-Powered Analysis</Text>
+          <View style={styles.aiAnalysisCard}>
+            <View style={styles.aiHeader}>
+              <Text style={styles.aiLabel}>🤖 Powered by AWS Bedrock</Text>
+            </View>
+
+            <View style={styles.aiSection}>
+              <Text style={styles.aiSectionTitle}>Overall Health</Text>
+              <Text style={styles.aiText}>{selectedRecord.aiAnalysis.overallHealth}</Text>
+            </View>
+
+            <View style={styles.aiSection}>
+              <Text style={styles.aiSectionTitle}>Explanation</Text>
+              <Text style={styles.aiText}>{selectedRecord.aiAnalysis.explanation}</Text>
+            </View>
+
+            {selectedRecord.aiAnalysis.deficiencies.length > 0 && (
+              <View style={styles.aiSection}>
+                <Text style={styles.aiSectionTitle}>Nutrient Deficiencies</Text>
+                {selectedRecord.aiAnalysis.deficiencies.map((def, idx) => (
+                  <Text key={idx} style={styles.aiListItem}>
+                    • {def}
+                  </Text>
+                ))}
+              </View>
+            )}
+
+            {selectedRecord.aiAnalysis.suitableCrops.length > 0 && (
+              <View style={styles.aiSection}>
+                <Text style={styles.aiSectionTitle}>Recommended Crops</Text>
+                {selectedRecord.aiAnalysis.suitableCrops.map((crop, idx) => (
+                  <View key={idx} style={styles.aiCropItem}>
+                    <Text style={styles.aiCropName}>{crop.crop}</Text>
+                    <Text style={styles.aiCropReason}>{crop.reason}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {selectedRecord.aiAnalysis.improvements.length > 0 && (
+              <View style={styles.aiSection}>
+                <Text style={styles.aiSectionTitle}>Improvement Actions</Text>
+                {selectedRecord.aiAnalysis.improvements.map((imp, idx) => (
+                  <View key={idx} style={styles.aiImprovementItem}>
+                    <View style={styles.aiImprovementHeader}>
+                      <Text style={styles.aiImprovementAction}>{imp.action}</Text>
+                      <View
+                        style={[
+                          styles.aiPriorityBadge,
+                          {
+                            backgroundColor:
+                              imp.priority === 'high'
+                                ? '#ef4444'
+                                : imp.priority === 'medium'
+                                  ? '#f59e0b'
+                                  : '#10b981',
+                          },
+                        ]}
+                      >
+                        <Text style={styles.aiPriorityText}>{imp.priority.toUpperCase()}</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.aiTimeframe}>Timeframe: {imp.timeframe}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {selectedRecord.aiAnalysis.insights.length > 0 && (
+              <View style={styles.aiSection}>
+                <Text style={styles.aiSectionTitle}>Key Insights</Text>
+                {selectedRecord.aiAnalysis.insights.map((insight, idx) => (
+                  <Text key={idx} style={styles.aiListItem}>
+                    💡 {insight}
+                  </Text>
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+
       {/* Soil Parameters */}
       {selectedRecord && (
         <View style={styles.section}>
@@ -557,5 +642,92 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  aiAnalysisCard: {
+    backgroundColor: '#ffffff',
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#8b5cf6',
+  },
+  aiHeader: {
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  aiLabel: {
+    fontSize: 12,
+    color: '#8b5cf6',
+    fontWeight: '600',
+  },
+  aiSection: {
+    marginBottom: 16,
+  },
+  aiSectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  aiText: {
+    fontSize: 14,
+    color: '#4b5563',
+    lineHeight: 20,
+  },
+  aiListItem: {
+    fontSize: 14,
+    color: '#4b5563',
+    marginBottom: 6,
+    lineHeight: 20,
+  },
+  aiCropItem: {
+    backgroundColor: '#f9fafb',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  aiCropName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  aiCropReason: {
+    fontSize: 12,
+    color: '#6b7280',
+  },
+  aiImprovementItem: {
+    backgroundColor: '#f9fafb',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  aiImprovementHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  aiImprovementAction: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1f2937',
+    flex: 1,
+    marginRight: 8,
+  },
+  aiPriorityBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  aiPriorityText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  aiTimeframe: {
+    fontSize: 12,
+    color: '#6b7280',
   },
 });

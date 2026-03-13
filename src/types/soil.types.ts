@@ -39,6 +39,15 @@ export interface SoilHealthData {
   soilType: 'clay' | 'sandy' | 'loamy' | 'silt' | 'peaty' | 'chalky' | 'mixed';
   texture?: string;
   color?: string;
+  // AI-powered analysis from AWS Bedrock (optional, only when backend is used)
+  aiAnalysis?: {
+    overallHealth: string;
+    explanation: string;
+    deficiencies: string[];
+    suitableCrops: Array<{ crop: string; reason: string }>;
+    improvements: Array<{ action: string; priority: string; timeframe: string }>;
+    insights: string[];
+  };
   createdAt: Date;
   updatedAt: Date;
 }

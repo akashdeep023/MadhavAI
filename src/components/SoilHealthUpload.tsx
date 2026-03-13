@@ -17,6 +17,8 @@ import {
 import { launchImageLibrary, launchCamera, Asset } from 'react-native-image-picker';
 import { SoilHealthData } from '../types/soil.types';
 import { soilHealthStorage } from '../services/soil/SoilHealthStorage';
+import { soilHealthAPI, AnalysisResult } from '../services/soil/SoilHealthAPI';
+import { config } from '../config/env';
 
 interface SoilHealthUploadProps {
   userId: string;
@@ -31,6 +33,8 @@ export const SoilHealthUpload: React.FC<SoilHealthUploadProps> = ({
 }) => {
   const [uploadMethod, setUploadMethod] = useState<'image' | 'manual' | null>(null);
   const [processing, setProcessing] = useState(false);
+  const [processingStage, setProcessingStage] = useState('');
+  const [processingProgress, setProcessingProgress] = useState(0);
   const [selectedImage, setSelectedImage] = useState<{
     uri: string;
     name: string;
@@ -129,58 +133,193 @@ export const SoilHealthUpload: React.FC<SoilHealthUploadProps> = ({
     }
 
     setProcessing(true);
+    setProcessingStage('Preparing upload');
+    setProcessingProgress(0);
 
-    setTimeout(async () => {
-      const extractedData: SoilHealthData = {
-        id: `soil-${Date.now()}`,
-        userId: userId,
-        testDate: new Date(),
-        labName: 'State Agricultural Lab',
-        sampleId: `SHC-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)
-          .toString()
-          .padStart(3, '0')}`,
-        location: {
-          latitude: 28.6139,
-          longitude: 77.209,
-          fieldName: 'Uploaded Field',
-        },
-        parameters: {
-          nitrogen: 260 + Math.floor(Math.random() * 80),
-          phosphorus: 20 + Math.floor(Math.random() * 20),
-          potassium: 200 + Math.floor(Math.random() * 100),
-          sulfur: 12 + Math.floor(Math.random() * 8),
-          calcium: 400 + Math.floor(Math.random() * 100),
-          magnesium: 100 + Math.floor(Math.random() * 40),
-          iron: 3.5 + Math.random() * 2,
-          zinc: 0.6 + Math.random() * 0.5,
-          copper: 0.2 + Math.random() * 0.3,
-          manganese: 2.0 + Math.random() * 1.5,
-          boron: 0.4 + Math.random() * 0.3,
-          pH: 6.2 + Math.random() * 1.2,
-          electricalConductivity: 0.3 + Math.random() * 0.3,
-          organicCarbon: 0.6 + Math.random() * 0.4,
-          organicMatter: 1.0 + Math.random() * 0.8,
-        },
-        soilType: 'loamy',
-        texture: 'Medium',
-        color: 'Brown',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      try {
-        await soilHealthStorage.saveSoilHealth(extractedData);
-        setProcessing(false);
-        setSelectedImage(null);
-        Alert.alert('Upload Successful', 'Soil health card data has been extracted and saved.', [
-          { text: 'OK', onPress: () => onUploadComplete(extractedData) },
-        ]);
-      } catch {
-        setProcessing(false);
-        setSelectedImage(null);
-        Alert.alert('Error', 'Failed to save soil health data. Please try again.');
+    try {
+      // Check if API is enabled
+      if (!config.ENABLE_API || !soilHealthAPI.isApiEnabled()) {
+        // Fallback to mock OCR if API is not available
+        await handleMockImageUpload();
+        return;
       }
-    }, 2000);
+
+      // Convert image URI to Blob for upload
+      const response = await fetch(selectedImage.uri);
+      const blob = await response.blob();
+
+      // Upload and analyze using backend API
+      const result = await soilHealthAPI.uploadAndAnalyze(
+        userId,
+        blob,
+        selectedImage.name,
+        selectedImage.type,
+        (stage, progress) => {
+          setProcessingStage(stage);
+          setProcessingProgress(progress);
+        }
+      );
+
+      // Convert API result to SoilHealthData format
+      const soilData = convertAnalysisResultToSoilData(result);
+
+      // Save to local storage
+      await soilHealthStorage.saveSoilHealth(soilData);
+
+      setProcessing(false);
+      setSelectedImage(null);
+      Alert.alert(
+        'Upload Successful',
+        'Soil health card has been analyzed. View the results to see detailed recommendations.',
+        [{ text: 'OK', onPress: () => onUploadComplete(soilData) }]
+      );
+    } catch (error) {
+      setProcessing(false);
+      console.error('Image upload error:', error);
+
+      Alert.alert(
+        'Upload Failed',
+        'Failed to process soil health card. Please try again or use manual entry.',
+        [
+          {
+            text: 'Try Again',
+            onPress: () => handleImageUpload(),
+          },
+          {
+            text: 'Manual Entry',
+            onPress: () => {
+              setSelectedImage(null);
+              setUploadMethod('manual');
+            },
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => {
+              setSelectedImage(null);
+              setUploadMethod(null);
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  /**
+   * Fallback mock OCR for when API is not available
+   */
+  const handleMockImageUpload = async () => {
+    return new Promise<void>((resolve) => {
+      setTimeout(async () => {
+        const extractedData: SoilHealthData = {
+          id: `soil-${Date.now()}`,
+          userId: userId,
+          testDate: new Date(),
+          labName: 'State Agricultural Lab',
+          sampleId: `SHC-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)
+            .toString()
+            .padStart(3, '0')}`,
+          location: {
+            latitude: 28.6139,
+            longitude: 77.209,
+            fieldName: 'Uploaded Field',
+          },
+          parameters: {
+            nitrogen: 260 + Math.floor(Math.random() * 80),
+            phosphorus: 20 + Math.floor(Math.random() * 20),
+            potassium: 200 + Math.floor(Math.random() * 100),
+            sulfur: 12 + Math.floor(Math.random() * 8),
+            calcium: 400 + Math.floor(Math.random() * 100),
+            magnesium: 100 + Math.floor(Math.random() * 40),
+            iron: 3.5 + Math.random() * 2,
+            zinc: 0.6 + Math.random() * 0.5,
+            copper: 0.2 + Math.random() * 0.3,
+            manganese: 2.0 + Math.random() * 1.5,
+            boron: 0.4 + Math.random() * 0.3,
+            pH: 6.2 + Math.random() * 1.2,
+            electricalConductivity: 0.3 + Math.random() * 0.3,
+            organicCarbon: 0.6 + Math.random() * 0.4,
+            organicMatter: 1.0 + Math.random() * 0.8,
+          },
+          soilType: 'loamy',
+          texture: 'Medium',
+          color: 'Brown',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        try {
+          await soilHealthStorage.saveSoilHealth(extractedData);
+          setProcessing(false);
+          setSelectedImage(null);
+          Alert.alert(
+            'Upload Successful (Mock)',
+            'Soil health card data has been extracted using mock OCR. Enable API for real analysis.',
+            [{ text: 'OK', onPress: () => onUploadComplete(extractedData) }]
+          );
+          resolve();
+        } catch {
+          setProcessing(false);
+          setSelectedImage(null);
+          Alert.alert('Error', 'Failed to save soil health data. Please try again.');
+          resolve();
+        }
+      }, 2000);
+    });
+  };
+
+  /**
+   * Convert API analysis result to SoilHealthData format
+   */
+  const convertAnalysisResultToSoilData = (result: AnalysisResult): SoilHealthData => {
+    const extracted = result.extractedData;
+    const analysis = result.analysis;
+
+    return {
+      id: result.analysisId,
+      userId: userId,
+      testDate: extracted?.testDate ? new Date(extracted.testDate) : new Date(),
+      labName: extracted?.labName || 'Unknown Lab',
+      sampleId: extracted?.sampleId || `SHC-${Date.now()}`,
+      location: {
+        latitude: 28.6139,
+        longitude: 77.209,
+        fieldName: 'Uploaded Field',
+      },
+      parameters: {
+        nitrogen: extracted?.parameters?.nitrogen?.value || 0,
+        phosphorus: extracted?.parameters?.phosphorus?.value || 0,
+        potassium: extracted?.parameters?.potassium?.value || 0,
+        sulfur: extracted?.parameters?.sulfur?.value,
+        calcium: extracted?.parameters?.calcium?.value,
+        magnesium: extracted?.parameters?.magnesium?.value,
+        iron: extracted?.parameters?.iron?.value,
+        zinc: extracted?.parameters?.zinc?.value,
+        copper: extracted?.parameters?.copper?.value,
+        manganese: extracted?.parameters?.manganese?.value,
+        boron: extracted?.parameters?.boron?.value,
+        pH: extracted?.parameters?.pH?.value || 7.0,
+        electricalConductivity: extracted?.parameters?.electricalConductivity?.value || 0,
+        organicCarbon: extracted?.parameters?.organicCarbon?.value || 0,
+        organicMatter: extracted?.parameters?.organicMatter?.value,
+      },
+      soilType: 'loamy',
+      texture: 'Medium',
+      color: 'Brown',
+      // Store AI analysis results for display
+      aiAnalysis: analysis
+        ? {
+            overallHealth: analysis.overallHealth,
+            explanation: analysis.explanation,
+            deficiencies: analysis.deficiencies,
+            suitableCrops: analysis.suitableCrops,
+            improvements: analysis.improvements,
+            insights: analysis.insights,
+          }
+        : undefined,
+      createdAt: new Date(result.createdAt),
+      updatedAt: new Date(result.updatedAt),
+    };
   };
 
   const handleManualSubmit = async () => {
@@ -274,10 +413,15 @@ export const SoilHealthUpload: React.FC<SoilHealthUploadProps> = ({
           {processing ? (
             <View style={styles.processingContainer}>
               <ActivityIndicator size="large" color="#3b82f6" />
-              <Text style={styles.processingText}>Processing image...</Text>
+              <Text style={styles.processingText}>{processingStage || 'Processing image...'}</Text>
               <Text style={styles.processingSubtext}>
-                Extracting soil parameters from your health card
+                {processingProgress > 0 ? `${processingProgress}% complete` : 'Please wait...'}
               </Text>
+              {processingProgress > 0 && (
+                <View style={styles.progressBarContainer}>
+                  <View style={[styles.progressBar, { width: `${processingProgress}%` }]} />
+                </View>
+              )}
             </View>
           ) : (
             <View style={styles.uploadContainer}>
@@ -741,5 +885,18 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     fontSize: 16,
     fontWeight: '600',
+  },
+  progressBarContainer: {
+    width: '80%',
+    height: 8,
+    backgroundColor: '#e5e7eb',
+    borderRadius: 4,
+    marginTop: 16,
+    overflow: 'hidden',
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#3b82f6',
+    borderRadius: 4,
   },
 });

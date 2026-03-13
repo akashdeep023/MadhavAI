@@ -1,16 +1,19 @@
 const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { TextractClient, AnalyzeDocumentCommand } = require('@aws-sdk/client-textract');
+const { BedrockRuntimeClient, InvokeModelCommand } = require('@aws-sdk/client-bedrock-runtime');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { DynamoDBDocumentClient, PutCommand, GetCommand } = require('@aws-sdk/lib-dynamodb');
 const { v4: uuidv4 } = require('uuid');
 
 const s3Client = new S3Client({ region: process.env.AWS_REGION || 'ap-south-1' });
 const textractClient = new TextractClient({ region: process.env.AWS_REGION || 'ap-south-1' });
+const bedrockClient = new BedrockRuntimeClient({ region: process.env.AWS_REGION || 'ap-south-1' });
 const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'ap-south-1' });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
 const SOIL_HEALTH_TABLE = process.env.SOIL_HEALTH_TABLE || 'madhavai-soil-health-production';
 const BUCKET_NAME = process.env.SOIL_HEALTH_IMAGES_BUCKET;
+const BEDROCK_MODEL_ID = 'anthropic.claude-3-sonnet-20240229-v1:0'; // Claude 3 Sonnet
 
 /**
  * Lambda handler for soil health image analysis
@@ -101,6 +104,16 @@ async function handleAnalyzeRequest(event) {
     // Extract soil parameters from Textract response
     const extractedData = extractSoilParameters(textractResponse.Blocks || []);
     
+    // Use Bedrock for intelligent analysis and recommendations
+    let bedrockAnalysis = null;
+    try {
+      bedrockAnalysis = await analyzeSoilWithBedrock(extractedData);
+      console.log('Bedrock analysis completed successfully');
+    } catch (bedrockError) {
+      console.error('Bedrock analysis failed, using rule-based fallback:', bedrockError);
+      bedrockAnalysis = generateRuleBasedAnalysis(extractedData);
+    }
+    
     // Store analysis results in DynamoDB
     const analysisRecord = {
       id: analysisId,
@@ -108,6 +121,7 @@ async function handleAnalyzeRequest(event) {
       imageKey: imageKey,
       status: 'completed',
       extractedData: extractedData,
+      analysis: bedrockAnalysis,
       rawTextractData: {
         blockCount: textractResponse.Blocks?.length || 0,
         documentMetadata: textractResponse.DocumentMetadata
@@ -133,6 +147,7 @@ async function handleAnalyzeRequest(event) {
         analysisId: analysisId,
         status: 'completed',
         extractedData: extractedData,
+        analysis: bedrockAnalysis,
         message: 'Soil health card analysis completed successfully'
       })
     };
@@ -318,4 +333,272 @@ function extractSoilParameters(blocks) {
   }
   
   return parameters;
+}
+
+
+/**
+ * Analyze soil health data using AWS Bedrock for intelligent recommendations
+ */
+async function analyzeSoilWithBedrock(extractedData) {
+  const prompt = buildSoilAnalysisPrompt(extractedData);
+  
+  const payload = {
+    anthropic_version: "bedrock-2023-05-31",
+    max_tokens: 2000,
+    messages: [
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    temperature: 0.7
+  };
+  
+  const command = new InvokeModelCommand({
+    modelId: BEDROCK_MODEL_ID,
+    contentType: 'application/json',
+    accept: 'application/json',
+    body: JSON.stringify(payload)
+  });
+  
+  const response = await bedrockClient.send(command);
+  const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+  
+  // Parse the Bedrock response
+  const analysisText = responseBody.content[0].text;
+  
+  // Extract structured data from the response
+  return parseBedrockResponse(analysisText, extractedData);
+}
+
+/**
+ * Build prompt for Bedrock soil analysis
+ */
+function buildSoilAnalysisPrompt(extractedData) {
+  const { pH, nitrogen, phosphorus, potassium, organicCarbon, electricalConductivity } = extractedData;
+  
+  return `You are an agricultural soil health expert. Analyze the following soil test results and provide recommendations in simple language suitable for Indian farmers.
+
+Soil Test Results:
+- pH: ${pH || 'Not available'}
+- Nitrogen (N): ${nitrogen || 'Not available'} kg/ha
+- Phosphorus (P): ${phosphorus || 'Not available'} kg/ha
+- Potassium (K): ${potassium || 'Not available'} kg/ha
+- Organic Carbon: ${organicCarbon || 'Not available'}%
+- Electrical Conductivity: ${electricalConductivity || 'Not available'} dS/m
+
+Please provide:
+1. Overall soil health assessment (poor/fair/good/excellent)
+2. Simple explanation of what these values mean for crop growth
+3. List of nutrient deficiencies (if any)
+4. Top 5 suitable crops for this soil condition with brief reasons
+5. Specific soil improvement recommendations with practical steps
+6. Estimated timeframe for soil improvement
+
+Format your response as JSON with the following structure:
+{
+  "overallHealth": "good/fair/poor/excellent",
+  "simpleExplanation": "Brief explanation in simple language",
+  "deficiencies": ["list of deficiencies"],
+  "suitableCrops": [
+    {
+      "cropName": "crop name",
+      "suitabilityScore": 85,
+      "reason": "why this crop is suitable"
+    }
+  ],
+  "improvements": [
+    {
+      "issue": "specific issue",
+      "recommendation": "practical recommendation",
+      "timeframe": "estimated time",
+      "priority": "high/medium/low"
+    }
+  ],
+  "keyInsights": ["important insights for the farmer"]
+}
+
+Provide practical, actionable advice that an Indian farmer can implement.`;
+}
+
+/**
+ * Parse Bedrock response into structured format
+ */
+function parseBedrockResponse(analysisText, extractedData) {
+  try {
+    // Try to extract JSON from the response
+    const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return {
+        ...parsed,
+        source: 'bedrock',
+        model: BEDROCK_MODEL_ID,
+        confidence: extractedData.overallConfidence || 0
+      };
+    }
+  } catch (error) {
+    console.error('Failed to parse Bedrock JSON response:', error);
+  }
+  
+  // Fallback: return raw text with basic structure
+  return {
+    overallHealth: 'unknown',
+    simpleExplanation: analysisText,
+    source: 'bedrock-text',
+    model: BEDROCK_MODEL_ID,
+    confidence: extractedData.overallConfidence || 0
+  };
+}
+
+/**
+ * Generate rule-based analysis as fallback when Bedrock fails
+ */
+function generateRuleBasedAnalysis(extractedData) {
+  const { pH, nitrogen, phosphorus, potassium, organicCarbon } = extractedData;
+  
+  const analysis = {
+    overallHealth: 'unknown',
+    simpleExplanation: '',
+    deficiencies: [],
+    suitableCrops: [],
+    improvements: [],
+    keyInsights: [],
+    source: 'rule-based',
+    confidence: extractedData.overallConfidence || 0
+  };
+  
+  // Assess overall health
+  let healthScore = 0;
+  let factors = 0;
+  
+  if (pH !== null) {
+    factors++;
+    if (pH >= 6.0 && pH <= 7.5) healthScore += 25;
+    else if (pH >= 5.5 && pH <= 8.0) healthScore += 15;
+    else healthScore += 5;
+  }
+  
+  if (nitrogen !== null) {
+    factors++;
+    if (nitrogen >= 280) healthScore += 25;
+    else if (nitrogen >= 200) healthScore += 15;
+    else healthScore += 5;
+  }
+  
+  if (phosphorus !== null) {
+    factors++;
+    if (phosphorus >= 25) healthScore += 25;
+    else if (phosphorus >= 15) healthScore += 15;
+    else healthScore += 5;
+  }
+  
+  if (potassium !== null) {
+    factors++;
+    if (potassium >= 280) healthScore += 25;
+    else if (potassium >= 200) healthScore += 15;
+    else healthScore += 5;
+  }
+  
+  const avgScore = factors > 0 ? healthScore / factors : 0;
+  
+  if (avgScore >= 20) analysis.overallHealth = 'excellent';
+  else if (avgScore >= 15) analysis.overallHealth = 'good';
+  else if (avgScore >= 10) analysis.overallHealth = 'fair';
+  else analysis.overallHealth = 'poor';
+  
+  // Check for deficiencies
+  if (nitrogen !== null && nitrogen < 280) {
+    analysis.deficiencies.push('Nitrogen (N)');
+    analysis.improvements.push({
+      issue: 'Low nitrogen levels',
+      recommendation: 'Apply urea or organic compost. Use green manure crops like dhaincha.',
+      timeframe: '2-3 months',
+      priority: 'high'
+    });
+  }
+  
+  if (phosphorus !== null && phosphorus < 25) {
+    analysis.deficiencies.push('Phosphorus (P)');
+    analysis.improvements.push({
+      issue: 'Low phosphorus levels',
+      recommendation: 'Apply single super phosphate (SSP) or rock phosphate.',
+      timeframe: '3-4 months',
+      priority: 'high'
+    });
+  }
+  
+  if (potassium !== null && potassium < 280) {
+    analysis.deficiencies.push('Potassium (K)');
+    analysis.improvements.push({
+      issue: 'Low potassium levels',
+      recommendation: 'Apply muriate of potash (MOP) or wood ash.',
+      timeframe: '2-3 months',
+      priority: 'medium'
+    });
+  }
+  
+  if (pH !== null && (pH < 6.0 || pH > 7.5)) {
+    if (pH < 6.0) {
+      analysis.improvements.push({
+        issue: 'Acidic soil (low pH)',
+        recommendation: 'Apply lime (calcium carbonate) to raise pH.',
+        timeframe: '4-6 months',
+        priority: 'high'
+      });
+    } else {
+      analysis.improvements.push({
+        issue: 'Alkaline soil (high pH)',
+        recommendation: 'Apply gypsum or sulfur to lower pH.',
+        timeframe: '4-6 months',
+        priority: 'high'
+      });
+    }
+  }
+  
+  if (organicCarbon !== null && organicCarbon < 0.5) {
+    analysis.improvements.push({
+      issue: 'Low organic matter',
+      recommendation: 'Add farmyard manure, compost, or practice crop rotation with legumes.',
+      timeframe: '6-12 months',
+      priority: 'medium'
+    });
+  }
+  
+  // Suggest suitable crops based on soil conditions
+  if (analysis.overallHealth === 'excellent' || analysis.overallHealth === 'good') {
+    analysis.suitableCrops = [
+      { cropName: 'Wheat', suitabilityScore: 85, reason: 'Good nutrient levels support wheat growth' },
+      { cropName: 'Rice', suitabilityScore: 80, reason: 'Suitable pH and nutrient balance for rice' },
+      { cropName: 'Cotton', suitabilityScore: 75, reason: 'Adequate potassium for cotton fiber quality' },
+      { cropName: 'Sugarcane', suitabilityScore: 70, reason: 'Good soil health supports long-duration crop' },
+      { cropName: 'Vegetables', suitabilityScore: 85, reason: 'Balanced nutrients ideal for vegetable cultivation' }
+    ];
+  } else {
+    analysis.suitableCrops = [
+      { cropName: 'Pulses (Moong/Urad)', suitabilityScore: 75, reason: 'Legumes can fix nitrogen and improve soil' },
+      { cropName: 'Millets', suitabilityScore: 70, reason: 'Drought-resistant and low nutrient requirement' },
+      { cropName: 'Groundnut', suitabilityScore: 65, reason: 'Tolerates moderate nutrient levels' }
+    ];
+  }
+  
+  // Generate simple explanation
+  analysis.simpleExplanation = `Your soil health is ${analysis.overallHealth}. `;
+  if (analysis.deficiencies.length > 0) {
+    analysis.simpleExplanation += `The soil needs more ${analysis.deficiencies.join(', ')}. `;
+  }
+  analysis.simpleExplanation += `Following the recommendations will improve your soil quality and crop yield.`;
+  
+  // Key insights
+  if (analysis.deficiencies.length === 0) {
+    analysis.keyInsights.push('Your soil has good nutrient balance');
+  }
+  if (pH !== null && pH >= 6.0 && pH <= 7.5) {
+    analysis.keyInsights.push('Soil pH is in the ideal range for most crops');
+  }
+  if (analysis.improvements.length > 0) {
+    analysis.keyInsights.push(`${analysis.improvements.length} improvement actions recommended`);
+  }
+  
+  return analysis;
 }
