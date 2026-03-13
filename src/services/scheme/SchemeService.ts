@@ -8,6 +8,7 @@
 import { Scheme } from '../../types/scheme.types';
 import { logger } from '../../utils/logger';
 import { encryptedStorage } from '../storage/EncryptedStorage';
+import { config } from '../../config/env';
 
 interface SchemeCache {
   schemes: Scheme[];
@@ -138,11 +139,50 @@ export class SchemeService {
    * Fetch schemes from API
    */
   private async fetchSchemesFromAPI(): Promise<Scheme[]> {
-    // TODO: Implement actual API call to government schemes API
-    // For now, return realistic mock data for demonstration
-    logger.info('Using mock government scheme data');
+    try {
+      const apiBaseUrl = config.API_BASE_URL;
 
-    // Return mock data directly - no API call needed
+      if (!apiBaseUrl) {
+        logger.warn('API not configured, using fallback mock data');
+        return this.getFallbackSchemes();
+      }
+
+      logger.info('Fetching schemes from API');
+      const response = await fetch(`${apiBaseUrl}/schemes`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const schemes = data.schemes || [];
+
+      // Convert date strings to Date objects
+      return schemes.map((scheme: any) => ({
+        ...scheme,
+        applicationDeadline: scheme.applicationDeadline
+          ? new Date(scheme.applicationDeadline)
+          : undefined,
+        createdAt: new Date(scheme.createdAt),
+        updatedAt: new Date(scheme.updatedAt),
+      }));
+    } catch (error) {
+      logger.error('Failed to fetch schemes from API, using fallback data', error);
+      return this.getFallbackSchemes();
+    }
+  }
+
+  /**
+   * Get fallback schemes (used when API is unavailable)
+   */
+  private getFallbackSchemes(): Scheme[] {
+    logger.info('Using fallback government scheme data');
+
     const mockSchemes: Scheme[] = [
       {
         id: 'pm-kisan-2024',
@@ -585,6 +625,131 @@ export class SchemeService {
     logger.info('Force refreshing schemes');
     await this.clearCache();
     return this.getAllSchemes();
+  }
+
+  /**
+   * Check eligibility via API
+   * Requirements: 2.2
+   */
+  async checkEligibilityViaAPI(schemeId: string, userProfile: any): Promise<any> {
+    try {
+      const apiBaseUrl = config.API_BASE_URL;
+
+      if (!apiBaseUrl) {
+        logger.warn('API disabled, eligibility check not available via API');
+        return null;
+      }
+
+      logger.info(`Checking eligibility via API for scheme ${schemeId}`);
+      const response = await fetch(`${apiBaseUrl}/schemes/check-eligibility`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          schemeId,
+          userProfile,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.eligibilityResult;
+    } catch (error) {
+      logger.error('Failed to check eligibility via API', error);
+      return null;
+    }
+  }
+
+  /**
+   * Schedule deadline alerts for eligible schemes
+   * Requirements: 2.6
+   */
+  async scheduleDeadlineAlertsForEligibleSchemes(
+    userId: string,
+    userProfile: any
+  ): Promise<number> {
+    try {
+      logger.info(`Scheduling deadline alerts for user ${userId}`);
+
+      // Get schemes with upcoming deadlines (within 30 days)
+      const schemesWithDeadlines = await this.getSchemesWithUpcomingDeadlines(30);
+
+      if (schemesWithDeadlines.length === 0) {
+        logger.info('No schemes with upcoming deadlines');
+        return 0;
+      }
+
+      const apiBaseUrl = config.API_BASE_URL;
+
+      if (!apiBaseUrl) {
+        logger.warn('API not configured, cannot schedule alerts');
+        return 0;
+      }
+
+      let alertsScheduled = 0;
+
+      // For each scheme, check eligibility and schedule alerts
+      for (const scheme of schemesWithDeadlines) {
+        try {
+          // Check eligibility
+          const eligibilityResult = await this.checkEligibilityViaAPI(scheme.id, userProfile);
+
+          if (eligibilityResult && eligibilityResult.isEligible) {
+            // Schedule deadline alerts (7, 3, 1 days before)
+            const deadline = new Date(scheme.applicationDeadline!);
+            const intervals = [7, 3, 1];
+
+            for (const days of intervals) {
+              const alertTime = new Date(deadline);
+              alertTime.setDate(alertTime.getDate() - days);
+
+              // Only schedule if alert time is in the future
+              if (alertTime > new Date()) {
+                const response = await fetch(`${apiBaseUrl}/alerts/schedule`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    userId,
+                    type: 'scheme',
+                    title: 'Scheme Deadline Reminder',
+                    message: `${scheme.name} application deadline is in ${days} day${
+                      days > 1 ? 's' : ''
+                    }`,
+                    scheduledTime: alertTime.toISOString(),
+                    priority: days === 1 ? 'high' : 'medium',
+                    actionable: true,
+                    actionUrl: `/schemes/${scheme.id}`,
+                    metadata: {
+                      schemeId: scheme.id,
+                      deadline: deadline.toISOString(),
+                      daysRemaining: days,
+                    },
+                  }),
+                });
+
+                if (response.ok) {
+                  alertsScheduled++;
+                }
+              }
+            }
+          }
+        } catch (error) {
+          logger.error(`Failed to process scheme ${scheme.id}`, error);
+        }
+      }
+
+      logger.info(`Scheduled ${alertsScheduled} deadline alerts`);
+      return alertsScheduled;
+    } catch (error) {
+      logger.error('Failed to schedule deadline alerts', error);
+      return 0;
+    }
   }
 }
 

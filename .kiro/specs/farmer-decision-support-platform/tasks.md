@@ -221,12 +221,61 @@ The implementation follows an incremental approach where each task builds on pre
     - **Property 39: Soil Improvement Recommendations** - For any deficiency, provide specific improvement tips
     - _Validates: Requirements 10.3, 10.4_
   
-  - [x] 8.5 Create soil health API endpoints and mobile UI
-    - Implement Lambda functions for soil analysis
+  - [x] 8.5 Create soil health API endpoints and mobile UI (frontend only)
     - Build React Native components for soil health card upload
     - Add soil analysis results display with visual indicators
     - Implement voice-based soil health guidance
     - _Requirements: 10.1, 10.6_
+  
+  - [ ] 8.6 Set up S3 bucket for soil health card images
+    - Create S3 bucket with appropriate lifecycle policies
+    - Configure bucket permissions for Lambda access
+    - Set up CORS configuration for mobile app uploads
+    - Implement presigned URL generation for secure uploads
+    - Add image size and format validation (JPEG/PNG, max 5MB)
+    - _Requirements: 10.1_
+  
+  - [ ] 8.7 Implement soil health image processing Lambda function
+    - Create new Lambda function at infrastructure/lambda/soil-analysis/
+    - Integrate AWS Textract SDK for OCR processing
+    - Implement image preprocessing (rotation, contrast adjustment)
+    - Parse extracted text to identify soil parameters (pH, NPK, micronutrients)
+    - Add structured data extraction with confidence scores
+    - Store parsed results in DynamoDB
+    - _Requirements: 10.1, 10.2_
+  
+  - [ ] 8.8 Integrate AWS Bedrock for intelligent soil analysis
+    - Add Bedrock SDK to soil-analysis Lambda
+    - Implement prompt engineering for soil health interpretation
+    - Use Bedrock to generate simple language explanations
+    - Add Bedrock-powered crop suitability matching
+    - Generate personalized soil improvement recommendations
+    - Implement fallback to rule-based analysis if Bedrock fails
+    - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
+  
+  - [ ] 8.9 Create soil health image upload API endpoints
+    - Implement API Gateway endpoint for presigned URL generation
+    - Create POST endpoint to trigger image processing
+    - Add GET endpoint to retrieve analysis results
+    - Implement webhook/polling mechanism for async processing status
+    - Add rate limiting to prevent abuse
+    - _Requirements: 10.1_
+  
+  - [ ] 8.10 Update mobile app for backend integration
+    - Connect image upload UI to new API endpoints
+    - Implement upload progress indicator
+    - Add processing status polling with loading states
+    - Display Textract OCR results with confidence indicators
+    - Show Bedrock-generated analysis and recommendations
+    - Add error handling for failed uploads or processing
+    - _Requirements: 10.1, 10.6_
+  
+  - [ ]* 8.11 Write property tests for image processing backend
+    - **Property 36: Soil Health Interpretation** - For any uploaded card, parse all parameters and provide simple interpretation
+    - **Property 37: Nutrient Deficiency Detection** - For any soil data with low nutrients, identify all deficiencies
+    - **Property 38: Soil-Crop Suitability Matching** - For any soil data, recommend matching crops with scores
+    - **Property 39: Soil Improvement Recommendations** - For any deficiency, provide specific improvement tips
+    - _Validates: Requirements 10.1, 10.2, 10.3, 10.4, 10.5_
 
 
 - [ ] 9. Recommendation engine implementation
@@ -240,18 +289,41 @@ The implementation follows an incremental approach where each task builds on pre
     - **Property 11: Recommendation Data Integration** - For any recommendation request, integrate all required data sources
     - _Validates: Requirements 16.1_
   
-  - [x] 9.3 Implement crop recommender with AI integration
-    - Create CropRecommender using AWS Bedrock for AI recommendations
+  - [x] 9.3 Implement crop recommender with AI integration (mock/rule-based)
+    - Create CropRecommender with rule-based logic
     - Implement ranking by profitability, risk, and suitability
     - Add complete cultivation plan generation
     - Ensure recommendations complete within 5 seconds
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 16.2_
   
+  - [ ] 9.3.1 Integrate AWS Bedrock SDK for AI-powered crop recommendations
+    - Install and configure AWS Bedrock SDK in recommendations Lambda
+    - Replace mock/rule-based logic with Bedrock API calls
+    - Implement prompt engineering for crop recommendation context
+    - Add error handling and fallback to rule-based recommendations
+    - Configure Bedrock model selection (Claude/Titan) based on use case
+    - _Requirements: 16.1, 16.2, 7.1, 3.1, 4.1_
+  
+  - [ ] 9.3.2 Optimize Bedrock integration for performance
+    - Implement request batching for multiple recommendations
+    - Add response caching for common recommendation scenarios
+    - Configure timeout and retry logic for Bedrock API calls
+    - Monitor and log Bedrock API usage and costs
+    - Ensure total recommendation time stays within 5 seconds
+    - _Requirements: 16.2, 17.2_
+  
+  - [ ]* 9.3.3 Write property tests for Bedrock integration
+    - **Property 58: Recommendation Performance** - For any recommendation request, complete within 5 seconds
+    - **Property 59: Feedback Integration** - For any user feedback, record and use for improvements
+    - **Property 60: Recommendation Prioritization** - For any recommendation set, rank by risk, profitability, preferences
+    - **Property 61: Insufficient Data Handling** - For any request with missing data, identify and request it
+    - **Property 14: Explainability Consistency** - For any Bedrock-generated recommendation, include clear reasoning
+    - _Validates: Requirements 16.2, 16.6, 16.7, 16.8, 16.5_
+  
   - [ ]* 9.4 Write property tests for crop recommendations
     - **Property 25: Crop Recommendation Ranking** - For any crop set, rank by profitability, risk, and suitability
     - **Property 26: Cultivation Plan Completeness** - For any selected crop, generate complete plan with all activities
-    - **Property 58: Recommendation Performance** - For any recommendation request, complete within 5 seconds
-    - _Validates: Requirements 7.2, 7.3, 7.4, 16.2, 17.2_
+    - _Validates: Requirements 7.2, 7.3, 7.4_
   
   - [x] 9.5 Implement fertilizer recommender
     - Create FertilizerRecommender analyzing soil, crop, and growth stage
@@ -310,7 +382,7 @@ The implementation follows an incremental approach where each task builds on pre
 - [x] 10. Checkpoint - Core recommendation engine validation
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 11. Government schemes navigator implementation
+- [x] 11. Government schemes navigator implementation
   - [x] 11.1 Create scheme service and data models
     - Define Scheme, EligibilityResult, and ApplicationStep interfaces
     - Implement SchemeService to fetch scheme data from government APIs

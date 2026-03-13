@@ -67,7 +67,9 @@ resource "aws_iam_role_policy" "lambda_policy" {
         ]
         Resource = [
           aws_s3_bucket.content.arn,
-          "${aws_s3_bucket.content.arn}/*"
+          "${aws_s3_bucket.content.arn}/*",
+          aws_s3_bucket.soil_health_images.arn,
+          "${aws_s3_bucket.soil_health_images.arn}/*"
         ]
       },
       {

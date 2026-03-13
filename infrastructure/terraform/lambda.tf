@@ -170,6 +170,33 @@ resource "aws_lambda_function" "training" {
   }
 }
 
+# Soil Health Upload Lambda
+resource "aws_lambda_function" "soil_health_upload" {
+  filename         = "${path.module}/../../dist/lambda/soil-health-upload.zip"
+  function_name    = "${var.project_name}-soil-health-upload-${var.environment}"
+  role            = aws_iam_role.lambda_execution.arn
+  handler         = "index.handler"
+  source_code_hash = filebase64sha256("${path.module}/../../dist/lambda/soil-health-upload.zip")
+  runtime         = var.lambda_runtime
+  memory_size     = var.lambda_memory_size
+  timeout         = var.lambda_timeout
+  
+  environment {
+    variables = {
+      ENVIRONMENT              = var.environment
+      SOIL_HEALTH_IMAGES_BUCKET = aws_s3_bucket.soil_health_images.id
+    }
+  }
+  
+  tracing_config {
+    mode = var.enable_xray ? "Active" : "PassThrough"
+  }
+  
+  tags = {
+    Name = "${var.project_name}-soil-health-upload"
+  }
+}
+
 # CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "auth" {
   name              = "/aws/lambda/${aws_lambda_function.auth.function_name}"
@@ -198,5 +225,10 @@ resource "aws_cloudwatch_log_group" "alerts" {
 
 resource "aws_cloudwatch_log_group" "training" {
   name              = "/aws/lambda/${aws_lambda_function.training.function_name}"
+  retention_in_days = 30
+}
+
+resource "aws_cloudwatch_log_group" "soil_health_upload" {
+  name              = "/aws/lambda/${aws_lambda_function.soil_health_upload.function_name}"
   retention_in_days = 30
 }
