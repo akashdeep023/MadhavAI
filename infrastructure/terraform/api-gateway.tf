@@ -157,6 +157,25 @@ resource "aws_api_gateway_resource" "soil_health_presigned_url" {
   path_part   = "presigned-url"
 }
 
+# Soil Health Analysis resources
+resource "aws_api_gateway_resource" "soil_health_analyze" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.soil_health.id
+  path_part   = "analyze"
+}
+
+resource "aws_api_gateway_resource" "soil_health_analysis" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.soil_health.id
+  path_part   = "analysis"
+}
+
+resource "aws_api_gateway_resource" "soil_health_analysis_id" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.soil_health_analysis.id
+  path_part   = "{analysisId}"
+}
+
 # Methods and Integrations for Auth - Send OTP
 resource "aws_api_gateway_method" "auth_send_otp_post" {
   rest_api_id   = aws_api_gateway_rest_api.main.id
@@ -454,6 +473,57 @@ resource "aws_api_gateway_integration" "training_get" {
   uri                     = aws_lambda_function.training.invoke_arn
 }
 
+# Methods and Integrations for Soil Health - Presigned URL
+resource "aws_api_gateway_method" "soil_health_presigned_url_post" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.soil_health_presigned_url.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "soil_health_presigned_url_post" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.soil_health_presigned_url.id
+  http_method             = aws_api_gateway_method.soil_health_presigned_url_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.soil_health_upload.invoke_arn
+}
+
+# Methods and Integrations for Soil Health - Analyze
+resource "aws_api_gateway_method" "soil_health_analyze_post" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.soil_health_analyze.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "soil_health_analyze_post" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.soil_health_analyze.id
+  http_method             = aws_api_gateway_method.soil_health_analyze_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.soil_analysis.invoke_arn
+}
+
+# Methods and Integrations for Soil Health - Get Analysis
+resource "aws_api_gateway_method" "soil_health_analysis_id_get" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.soil_health_analysis_id.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "soil_health_analysis_id_get" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.soil_health_analysis_id.id
+  http_method             = aws_api_gateway_method.soil_health_analysis_id_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.soil_analysis.invoke_arn
+}
+
 # Lambda permissions for API Gateway
 resource "aws_lambda_permission" "auth" {
   statement_id  = "AllowAPIGatewayInvoke"
@@ -503,6 +573,22 @@ resource "aws_lambda_permission" "training" {
   source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
 }
 
+resource "aws_lambda_permission" "soil_health_upload" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.soil_health_upload.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "soil_analysis" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.soil_analysis.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
+}
+
 # Deployment
 resource "aws_api_gateway_deployment" "main" {
   rest_api_id = aws_api_gateway_rest_api.main.id
@@ -525,7 +611,10 @@ resource "aws_api_gateway_deployment" "main" {
     aws_api_gateway_integration.alerts_process_due_post,
     aws_api_gateway_integration.alerts_id_read_put,
     aws_api_gateway_integration.alerts_id_delete,
-    aws_api_gateway_integration.training_get
+    aws_api_gateway_integration.training_get,
+    aws_api_gateway_integration.soil_health_presigned_url_post,
+    aws_api_gateway_integration.soil_health_analyze_post,
+    aws_api_gateway_integration.soil_health_analysis_id_get
   ]
   
   lifecycle {

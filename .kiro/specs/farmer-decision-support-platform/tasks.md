@@ -227,7 +227,7 @@ The implementation follows an incremental approach where each task builds on pre
     - Implement voice-based soil health guidance
     - _Requirements: 10.1, 10.6_
   
-  - [ ] 8.6 Set up S3 bucket for soil health card images
+  - [x] 8.6 Set up S3 bucket for soil health card images
     - Create S3 bucket with appropriate lifecycle policies
     - Configure bucket permissions for Lambda access
     - Set up CORS configuration for mobile app uploads
@@ -235,7 +235,7 @@ The implementation follows an incremental approach where each task builds on pre
     - Add image size and format validation (JPEG/PNG, max 5MB)
     - _Requirements: 10.1_
   
-  - [ ] 8.7 Implement soil health image processing Lambda function
+  - [x] 8.7 Implement soil health image processing Lambda function
     - Create new Lambda function at infrastructure/lambda/soil-analysis/
     - Integrate AWS Textract SDK for OCR processing
     - Implement image preprocessing (rotation, contrast adjustment)

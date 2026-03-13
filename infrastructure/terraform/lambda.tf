@@ -197,6 +197,34 @@ resource "aws_lambda_function" "soil_health_upload" {
   }
 }
 
+# Soil Analysis Lambda (Textract OCR)
+resource "aws_lambda_function" "soil_analysis" {
+  filename         = "${path.module}/../../dist/lambda/soil-analysis.zip"
+  function_name    = "${var.project_name}-soil-analysis-${var.environment}"
+  role            = aws_iam_role.lambda_execution.arn
+  handler         = "index.handler"
+  source_code_hash = filebase64sha256("${path.module}/../../dist/lambda/soil-analysis.zip")
+  runtime         = var.lambda_runtime
+  memory_size     = 1024
+  timeout         = 60
+  
+  environment {
+    variables = {
+      ENVIRONMENT              = var.environment
+      SOIL_HEALTH_IMAGES_BUCKET = aws_s3_bucket.soil_health_images.id
+      SOIL_HEALTH_TABLE        = aws_dynamodb_table.soil_health.name
+    }
+  }
+  
+  tracing_config {
+    mode = var.enable_xray ? "Active" : "PassThrough"
+  }
+  
+  tags = {
+    Name = "${var.project_name}-soil-analysis"
+  }
+}
+
 # CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "auth" {
   name              = "/aws/lambda/${aws_lambda_function.auth.function_name}"
@@ -230,5 +258,10 @@ resource "aws_cloudwatch_log_group" "training" {
 
 resource "aws_cloudwatch_log_group" "soil_health_upload" {
   name              = "/aws/lambda/${aws_lambda_function.soil_health_upload.function_name}"
+  retention_in_days = 30
+}
+
+resource "aws_cloudwatch_log_group" "soil_analysis" {
+  name              = "/aws/lambda/${aws_lambda_function.soil_analysis.function_name}"
   retention_in_days = 30
 }

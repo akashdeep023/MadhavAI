@@ -244,3 +244,42 @@ resource "aws_dynamodb_table" "training_lessons" {
     Name = "${var.project_name}-training-lessons"
   }
 }
+
+# Soil Health Table
+resource "aws_dynamodb_table" "soil_health" {
+  name           = "${var.project_name}-soil-health-${var.environment}"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "id"
+  stream_enabled = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
+  
+  attribute {
+    name = "id"
+    type = "S"
+  }
+  
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+  
+  attribute {
+    name = "createdAt"
+    type = "S"
+  }
+  
+  global_secondary_index {
+    name            = "UserCreatedIndex"
+    hash_key        = "userId"
+    range_key       = "createdAt"
+    projection_type = "ALL"
+  }
+  
+  point_in_time_recovery {
+    enabled = true
+  }
+  
+  tags = {
+    Name = "${var.project_name}-soil-health"
+  }
+}
