@@ -165,16 +165,31 @@ jobs:
       - name: Generate release tag
         id: tag
         run: |
-          # Use short SHA + timestamp for a unique release tag per push
-          TAG="build-$(date +'%Y%m%d-%H%M%S')-${GITHUB_SHA::7}"
+          # Read version from package.json
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v${VERSION}"
           echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Release tag: $TAG"
 
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          if git ls-remote --tags origin | grep -q "refs/tags/${TAG}$"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "⚠️  Tag ${TAG} already exists. Update version in package.json to create a new release. Skipping release."
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✅ Tag ${TAG} is new. Proceeding with release."
+          fi
+
       - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
-          name: "Build ${{ steps.tag.outputs.tag }}"
+          name: "Release ${{ steps.tag.outputs.tag }}"
           files: |
             release-artifacts/bundle/release/app-release.aab
             release-artifacts/apk/release/*.apk
