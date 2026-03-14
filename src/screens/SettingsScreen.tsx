@@ -193,9 +193,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
       <View style={styles.section}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} disabled={loading}>
           <Text style={styles.logoutIcon}>🚪</Text>
-          <Text style={styles.logoutText}>
-            {loading ? t('auth.loggingOut') : t('auth.logout')}
-          </Text>
+          <Text style={styles.logoutText}>{loading ? t('auth.loggingOut') : t('auth.logout')}</Text>
         </TouchableOpacity>
       </View>
 
