@@ -22,7 +22,7 @@ let translationServiceInstance: TranslationService | null = null;
 let languagePreferenceManagerInstance: LanguagePreferenceManager | null = null;
 
 /**
- * Initialize translation service instances
+ * Initialize translation service instances (called once from App.tsx after services are ready)
  */
 export function initializeTranslationServices(
   translationService: TranslationService,
@@ -36,45 +36,31 @@ export function initializeTranslationServices(
  * Hook for translation functionality
  */
 export function useTranslation(): UseTranslationResult {
-  const [language, setLanguageState] = useState<LanguageCode>('hi');
-  const [isLoading, setIsLoading] = useState(true);
+  // Sync language state from the already-initialized service instance
+  const [language, setLanguageState] = useState<LanguageCode>(
+    () => translationServiceInstance?.getCurrentLanguage() ?? 'hi'
+  );
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Initialize
+  // On mount, sync language in case service was initialized after hook first ran
   useEffect(() => {
-    const init = async () => {
-      try {
-        if (!translationServiceInstance || !languagePreferenceManagerInstance) {
-          throw new Error('Translation services not initialized');
-        }
-
-        // Get user's language preference
-        const preferredLanguage = await languagePreferenceManagerInstance.getLanguagePreference();
-
-        // Initialize translation service with preferred language
-        await translationServiceInstance.initialize(preferredLanguage);
-
-        setLanguageState(preferredLanguage);
-        setIsLoading(false);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Failed to initialize translations'));
-        setIsLoading(false);
-      }
-    };
-
-    init();
+    if (translationServiceInstance) {
+      setLanguageState(translationServiceInstance.getCurrentLanguage());
+    }
   }, []);
 
-  // Translation function
+  // Translation function - service is already initialized by App.tsx, just call translate
   const t = useCallback(
     (key: TranslationKey, params?: { [key: string]: string | number }): string => {
       if (!translationServiceInstance) {
         return key;
       }
-
       return translationServiceInstance.translate(key, params);
     },
-    []
+    // Re-memoize when language changes so components re-render with new translations
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [language]
   );
 
   // Set language function
@@ -85,28 +71,22 @@ export function useTranslation(): UseTranslationResult {
       }
 
       setIsLoading(true);
-
-      // Update translation service
       await translationServiceInstance.setLanguage(newLanguage);
-
-      // Update preference (userId would come from auth context in real app)
-      // For now, just update local preference
       await languagePreferenceManagerInstance.setRegistrationLanguage(newLanguage);
-
       setLanguageState(newLanguage);
-      setIsLoading(false);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to change language'));
+    } finally {
       setIsLoading(false);
     }
   }, []);
 
   return {
     t,
-    translate: t, // Alias for convenience
+    translate: t,
     language,
     setLanguage,
-    changeLanguage: setLanguage, // Alias for convenience
+    changeLanguage: setLanguage,
     isLoading,
     error,
   };

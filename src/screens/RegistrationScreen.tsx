@@ -55,7 +55,7 @@ export default function RegistrationScreen({
   mobileNumber,
   onRegistrationComplete,
 }: RegistrationScreenProps) {
-  const { setLanguage } = useTranslation();
+  const { t, setLanguage } = useTranslation();
   const [step, setStep] = useState<'language' | 'profile'>('language');
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [name, setName] = useState('');
@@ -85,29 +85,28 @@ export default function RegistrationScreen({
   };
 
   const handleSubmit = async () => {
-    // Validation
     if (!name.trim()) {
-      Alert.alert('Required', 'Please enter your name');
+      Alert.alert(t('registration.required'), t('registration.enterName'));
       return;
     }
 
     if (!state.trim() || !district.trim() || !village.trim()) {
-      Alert.alert('Required', 'Please enter your complete location');
+      Alert.alert(t('registration.required'), t('registration.enterLocation'));
       return;
     }
 
     if (!pincode || pincode.length !== 6) {
-      Alert.alert('Invalid', 'Please enter a valid 6-digit pincode');
+      Alert.alert(t('registration.invalid'), t('registration.validPincode'));
       return;
     }
 
     if (!farmSize || parseFloat(farmSize) <= 0) {
-      Alert.alert('Invalid', 'Please enter a valid farm size');
+      Alert.alert(t('registration.invalid'), t('registration.validFarmSize'));
       return;
     }
 
     if (selectedCrops.length === 0) {
-      Alert.alert('Required', 'Please select at least one crop');
+      Alert.alert(t('registration.required'), t('registration.selectCrop'));
       return;
     }
 
@@ -124,7 +123,7 @@ export default function RegistrationScreen({
           village: village.trim(),
           pincode: pincode.trim(),
           coordinates: {
-            latitude: 0, // Will be updated when user enables location
+            latitude: 0,
             longitude: 0,
           },
         },
@@ -135,12 +134,12 @@ export default function RegistrationScreen({
       });
 
       logger.info('Profile created successfully');
-      Alert.alert('Success', 'Profile created successfully!', [
-        { text: 'OK', onPress: onRegistrationComplete },
+      Alert.alert(t('registration.success'), t('registration.profileCreated'), [
+        { text: t('common.ok'), onPress: onRegistrationComplete },
       ]);
     } catch (error) {
       logger.error('Failed to create profile', error);
-      Alert.alert('Error', 'Failed to create profile. Please try again.');
+      Alert.alert(t('registration.error'), t('registration.profileFailed'));
     } finally {
       setLoading(false);
     }
@@ -153,8 +152,8 @@ export default function RegistrationScreen({
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <Text style={styles.logo}>🌾</Text>
-            <Text style={styles.title}>Welcome to MADHAV AI</Text>
-            <Text style={styles.subtitle}>Select your preferred language</Text>
+            <Text style={styles.title}>{t('registration.welcome')}</Text>
+            <Text style={styles.subtitle}>{t('registration.selectLanguage')}</Text>
             <Text style={styles.subtitleSecondary}>अपनी पसंदीदा भाषा चुनें</Text>
           </View>
 
@@ -192,17 +191,17 @@ export default function RegistrationScreen({
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.logo}>🌾</Text>
-          <Text style={styles.title}>Complete Your Profile</Text>
-          <Text style={styles.subtitle}>Help us personalize your farming experience</Text>
+          <Text style={styles.title}>{t('registration.completeProfile')}</Text>
+          <Text style={styles.subtitle}>{t('registration.personalizeExperience')}</Text>
         </View>
 
         <View style={styles.form}>
           {/* Name */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Full Name *</Text>
+            <Text style={styles.label}>{t('registration.fullName')} *</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your name"
+              placeholder={t('registration.enterName')}
               placeholderTextColor="#999"
               value={name}
               onChangeText={setName}
@@ -338,7 +337,7 @@ export default function RegistrationScreen({
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Complete Registration</Text>
+              <Text style={styles.buttonText}>{t('registration.submit')}</Text>
             )}
           </TouchableOpacity>
 

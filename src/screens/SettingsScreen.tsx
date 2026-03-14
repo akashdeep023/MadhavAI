@@ -37,43 +37,36 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   };
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
+    Alert.alert(t('auth.logout'), t('auth.logoutConfirm'), [
       {
-        text: 'Cancel',
+        text: t('common.cancel'),
         style: 'cancel',
       },
       {
-        text: 'Logout',
+        text: t('auth.logout'),
         style: 'destructive',
         onPress: async () => {
           try {
             setLoading(true);
 
-            // Get auth token
             const authToken = await encryptedStorage.getItem<string>('auth_token');
-
             if (authToken) {
-              // Logout from authentication manager
               await authenticationManager.logout(authToken);
             }
 
-            // Clear stored credentials
             await encryptedStorage.removeItem('auth_token');
             await encryptedStorage.removeItem('current_user_id');
-
-            // Clear user profile (single-user mode)
             await profileManager.deleteProfile();
 
             logger.info('User logged out successfully');
 
-            // Navigate to login screen
             navigation.reset({
               index: 0,
               routes: [{ name: 'Login' }],
             });
           } catch (error) {
             logger.error('Logout failed', error);
-            Alert.alert('Error', 'Failed to logout. Please try again.');
+            Alert.alert(t('common.error'), t('errors.tryAgain'));
           } finally {
             setLoading(false);
           }
@@ -83,15 +76,11 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   };
 
   const handleEditProfile = () => {
-    Alert.alert('Coming Soon', 'Profile editing will be available in the next update.');
+    Alert.alert(t('settings.comingSoon'), t('settings.editProfile'));
   };
 
   const handleAbout = () => {
-    Alert.alert(
-      'About MADHAV AI',
-      'AI-Powered Farmer Decision Support Platform\n\nVersion 1.0.0\n\nHelping farmers make better decisions with AI-powered recommendations, weather forecasts, market prices, and more.',
-      [{ text: 'OK' }]
-    );
+    Alert.alert(t('settings.about'), 'MADHAV AI v1.0.0');
   };
 
   return (
@@ -119,7 +108,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         <TouchableOpacity style={styles.settingItem} onPress={handleEditProfile}>
           <View style={styles.settingLeft}>
             <Text style={styles.settingIcon}>👤</Text>
-            <Text style={styles.settingLabel}>Edit Profile</Text>
+            <Text style={styles.settingLabel}>{t('settings.editProfile')}</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
@@ -127,7 +116,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         <TouchableOpacity style={styles.settingItem} onPress={() => setShowLanguageSwitcher(true)}>
           <View style={styles.settingLeft}>
             <Text style={styles.settingIcon}>🌐</Text>
-            <Text style={styles.settingLabel}>{t('ui.profile.language')}</Text>
+            <Text style={styles.settingLabel}>{t('settings.language')}</Text>
           </View>
           <View style={styles.settingValue}>
             <Text style={styles.currentLanguage}>{getLanguageNativeName(language)}</Text>
@@ -148,29 +137,18 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         >
           <View style={styles.settingLeft}>
             <Text style={styles.settingIcon}>🔔</Text>
-            <Text style={styles.settingLabel}>Notifications</Text>
+            <Text style={styles.settingLabel}>{t('settings.notifications')}</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.settingItem}
-          onPress={() => Alert.alert('Coming Soon', 'Data sync settings will be available soon.')}
+          onPress={() => Alert.alert(t('settings.comingSoon'), '')}
         >
           <View style={styles.settingLeft}>
             <Text style={styles.settingIcon}>🔄</Text>
-            <Text style={styles.settingLabel}>Data Sync</Text>
-          </View>
-          <Text style={styles.arrow}>›</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.settingItem}
-          onPress={() => Alert.alert('Coming Soon', 'Storage management will be available soon.')}
-        >
-          <View style={styles.settingLeft}>
-            <Text style={styles.settingIcon}>💾</Text>
-            <Text style={styles.settingLabel}>Storage</Text>
+            <Text style={styles.settingLabel}>{t('settings.dataSync')}</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
@@ -182,7 +160,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.settingItem}
-          onPress={() => Alert.alert('Help', 'For help, please contact support@madhavai.com')}
+          onPress={() => Alert.alert(t('settings.comingSoon'), '')}
         >
           <View style={styles.settingLeft}>
             <Text style={styles.settingIcon}>❓</Text>
@@ -194,18 +172,18 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
         <TouchableOpacity style={styles.settingItem} onPress={handleAbout}>
           <View style={styles.settingLeft}>
             <Text style={styles.settingIcon}>ℹ️</Text>
-            <Text style={styles.settingLabel}>About</Text>
+            <Text style={styles.settingLabel}>{t('settings.about')}</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.settingItem}
-          onPress={() => Alert.alert('Privacy Policy', 'Privacy policy will be displayed here.')}
+          onPress={() => Alert.alert(t('settings.privacy'), '')}
         >
           <View style={styles.settingLeft}>
             <Text style={styles.settingIcon}>🔒</Text>
-            <Text style={styles.settingLabel}>Privacy Policy</Text>
+            <Text style={styles.settingLabel}>{t('settings.privacy')}</Text>
           </View>
           <Text style={styles.arrow}>›</Text>
         </TouchableOpacity>
@@ -215,7 +193,9 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
       <View style={styles.section}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} disabled={loading}>
           <Text style={styles.logoutIcon}>🚪</Text>
-          <Text style={styles.logoutText}>{loading ? 'Logging out...' : 'Logout'}</Text>
+          <Text style={styles.logoutText}>
+            {loading ? t('auth.loggingOut') : t('auth.logout')}
+          </Text>
         </TouchableOpacity>
       </View>
 
