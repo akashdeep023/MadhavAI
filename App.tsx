@@ -29,7 +29,7 @@ import { AlertScheduler } from './src/services/alert/AlertScheduler';
 import { marketService } from './src/services/market/MarketService';
 import { profileManager } from './src/services/profile/ProfileManager';
 import { DatabaseService } from './src/services/storage/DatabaseService';
-import { initializeTranslationServices, useTranslation } from './src/hooks/useTranslation';
+import { initializeTranslationServices } from './src/hooks/useTranslation';
 import { encryptedStorage } from './src/services/storage/EncryptedStorage';
 
 // Initialize services

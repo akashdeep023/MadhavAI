@@ -21,7 +21,17 @@ import ml from '../locales/ml.json';
 import or from '../locales/or.json';
 
 const LOCALES: Record<LanguageCode, Record<string, any>> = {
-  en, hi, ta, te, kn, mr, bn, gu, pa, ml, or,
+  en,
+  hi,
+  ta,
+  te,
+  kn,
+  mr,
+  bn,
+  gu,
+  pa,
+  ml,
+  or,
 };
 
 // Global language state so all hook instances stay in sync
@@ -48,7 +58,11 @@ function resolve(obj: Record<string, any>, key: string): string {
   return typeof cur === 'string' ? cur : key;
 }
 
-function translate(key: string, lang: LanguageCode, params?: Record<string, string | number>): string {
+function translate(
+  key: string,
+  lang: LanguageCode,
+  params?: Record<string, string | number>
+): string {
   const locale = LOCALES[lang] ?? LOCALES['hi'];
   let text = resolve(locale, key);
 
@@ -58,7 +72,9 @@ function translate(key: string, lang: LanguageCode, params?: Record<string, stri
   }
 
   if (!params) return text;
-  return text.replace(/\{(\w+)\}/g, (_, k) => (params[k] !== undefined ? String(params[k]) : `{${k}}`));
+  return text.replace(/\{(\w+)\}/g, (_, k) =>
+    params[k] !== undefined ? String(params[k]) : `{${k}}`
+  );
 }
 
 export function useTranslation() {
@@ -71,12 +87,14 @@ export function useTranslation() {
 
     const update = () => setLang(currentLanguage);
     listeners.add(update);
-    return () => { listeners.delete(update); };
+    return () => {
+      listeners.delete(update);
+    };
   }, []);
 
   const t = useCallback(
     (key: string, params?: Record<string, string | number>) => translate(key, lang, params),
-    [lang],
+    [lang]
   );
 
   const setLanguage = useCallback(async (newLang: LanguageCode) => {
