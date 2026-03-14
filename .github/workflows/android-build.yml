@@ -5,58 +5,45 @@ on:
     branches:
       - main
       - release/*
-    tags:
-      - 'v*'
   pull_request:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      release_type:
-        description: 'Release type'
-        required: true
-        default: 'internal'
-        type: choice
-        options:
-          - internal
-          - alpha
-          - beta
-          - production
 
 jobs:
   build:
     name: Build Android App
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22.11.0'
           cache: 'npm'
-      
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
           cache: 'gradle'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run tests
         run: npm test -- --coverage
-      
+
       - name: Run linter
         run: npm run lint
-      
+
       - name: Type check
         run: npm run type-check
-      
+
       - name: Cache Gradle packages
         uses: actions/cache@v4
         with:
@@ -66,12 +53,10 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      
+
       - name: Create .env file for Android build
         run: |
-          # Create .env file with build-time configuration from GitHub Secrets
           cat > android/.env << EOF
-          # API Configuration
           API_BASE_URL=${{ secrets.API_BASE_URL || 'https://api.madhavai.com/api' }}
           API_TIMEOUT=${{ secrets.API_TIMEOUT || '30000' }}
           ENABLE_API=${{ secrets.ENABLE_API || 'true' }}
@@ -79,16 +64,10 @@ jobs:
           STORAGE_LIMIT_MB=${{ secrets.STORAGE_LIMIT_MB || '500' }}
           SYNC_INTERVAL_MS=${{ secrets.SYNC_INTERVAL_MS || '360000' }}
           MAX_RETRY_ATTEMPTS=${{ secrets.MAX_RETRY_ATTEMPTS || '5' }}
-          
-          # OTA Updates
           OTA_API_BASE_URL=${{ secrets.OTA_API_BASE_URL || 'https://api.madhavai.app' }}
           EOF
-          
-          # Note: Lambda-specific variables (SNS_TOPIC_ARN, PRIMARY_REGION, etc.) 
-          # are NOT included here. They are managed by Terraform and injected 
-          # directly into Lambda functions. The mobile app does not need them.
-          echo "✅ Created android/.env file from GitHub Secrets"
-      
+          echo "✅ Created android/.env file"
+
       - name: Decode keystore
         if: github.event_name != 'pull_request'
         continue-on-error: true
@@ -99,15 +78,15 @@ jobs:
             echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
             echo "✅ Keystore decoded successfully"
           else
-            echo "⚠️  ANDROID_KEYSTORE_BASE64 secret not set. Will use debug signing."
+            echo "⚠️  No keystore secret set, using debug signing"
           fi
-      
-      - name: Build debug APK (for PRs)
+
+      - name: Build debug APK (PRs only)
         if: github.event_name == 'pull_request'
         run: |
           cd android
           ./gradlew assembleDebug
-      
+
       - name: Build release AAB
         if: github.event_name != 'pull_request'
         env:
@@ -117,28 +96,10 @@ jobs:
           MADHAVAI_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd android
-          if [ -f "app/release.keystore" ]; then
-            echo "✅ Building signed release with keystore"
-          else
-            echo "⚠️  No keystore found. Building with debug signing."
-          fi
-          
-          # Build AAB (for Play Store)
-          echo "📦 Building Android App Bundle (AAB)..."
           ./gradlew bundleRelease
-          
-          # Save AAB before cleaning
           mkdir -p ../build-artifacts
           cp app/build/outputs/bundle/release/app-release.aab ../build-artifacts/
-          echo "✅ AAB saved to build-artifacts/"
-      
-      - name: Clean build for APK
-        if: github.event_name != 'pull_request'
-        run: |
-          cd android
-          echo "🧹 Cleaning build directory..."
-          ./gradlew clean
-      
+
       - name: Build release APK
         if: github.event_name != 'pull_request'
         env:
@@ -148,15 +109,10 @@ jobs:
           MADHAVAI_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd android
-          # Build APK with splits (for direct distribution)
-          echo "📦 Building APK with splits..."
-          ./gradlew assembleRelease
-          
-          # Restore AAB to build outputs
+          ./gradlew clean assembleRelease
           mkdir -p app/build/outputs/bundle/release
           cp ../build-artifacts/app-release.aab app/build/outputs/bundle/release/
-          echo "✅ AAB restored to build outputs"
-      
+
       - name: Upload debug APK artifact
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
@@ -164,7 +120,7 @@ jobs:
           name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
-      
+
       - name: Upload release artifacts
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
@@ -174,114 +130,56 @@ jobs:
             android/app/build/outputs/bundle/release/app-release.aab
             android/app/build/outputs/apk/release/*.apk
           retention-days: 30
-      
+
       - name: Check build sizes
         if: github.event_name != 'pull_request'
         continue-on-error: true
         run: |
           echo "📊 Build sizes:"
-          
-          # Check AAB size
           if [ -f "android/app/build/outputs/bundle/release/app-release.aab" ]; then
-            AAB_SIZE=$(stat -c%s android/app/build/outputs/bundle/release/app-release.aab 2>/dev/null || stat -f%z android/app/build/outputs/bundle/release/app-release.aab)
-            AAB_SIZE_MB=$((AAB_SIZE / 1024 / 1024))
-            echo "AAB: ${AAB_SIZE_MB} MB"
-          else
-            echo "⚠️  AAB not found"
+            AAB_SIZE=$(stat -c%s android/app/build/outputs/bundle/release/app-release.aab)
+            echo "AAB: $((AAB_SIZE / 1024 / 1024)) MB"
           fi
-          
-          # Check APK sizes
           if [ -d "android/app/build/outputs/apk/release" ]; then
-            echo ""
-            echo "APKs:"
             ls -lh android/app/build/outputs/apk/release/*.apk
-            
-            # Check if universal APK is under 50 MB
-            if [ -f "android/app/build/outputs/apk/release/app-universal-release.apk" ]; then
-              APK_SIZE=$(stat -c%s android/app/build/outputs/apk/release/app-universal-release.apk 2>/dev/null || stat -f%z android/app/build/outputs/apk/release/app-universal-release.apk)
-              APK_SIZE_MB=$((APK_SIZE / 1024 / 1024))
-              echo ""
-              echo "Universal APK size: ${APK_SIZE_MB} MB"
-              
-              if [ $APK_SIZE_MB -gt 50 ]; then
-                echo "⚠️  Warning: APK size exceeds 50 MB target"
-              else
-                echo "✅ APK size is within 50 MB target"
-              fi
-            fi
-          else
-            echo "⚠️  APK directory not found"
           fi
 
   github-release:
     name: Create GitHub Release
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Download release artifacts
         uses: actions/download-artifact@v4
         with:
           name: app-release
           path: release-artifacts
-      
-      - name: Extract version from tag
-        id: version
+
+      - name: Generate release tag
+        id: tag
         run: |
-          VERSION=${GITHUB_REF#refs/tags/}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
-      
+          # Use short SHA + timestamp for a unique release tag per push
+          TAG="build-$(date +'%Y%m%d-%H%M%S')-${GITHUB_SHA::7}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Release tag: $TAG"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: "Build ${{ steps.tag.outputs.tag }}"
           files: |
             release-artifacts/bundle/release/app-release.aab
             release-artifacts/apk/release/*.apk
           generate_release_notes: true
           draft: false
-          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  deploy:
-    name: Deploy to Play Store
-    needs: build
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Download release artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: app-release
-          path: release-artifacts
-      
-      - name: Determine release track
-        id: release_track
-        run: |
-          TRACK="${{ github.event.inputs.release_type }}"
-          echo "track=$TRACK" >> $GITHUB_OUTPUT
-          echo "Deploying to track: $TRACK"
-      
-      - name: Upload to Play Store
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.madhavai
-          releaseFiles: release-artifacts/bundle/release/app-release.aab
-          track: ${{ steps.release_track.outputs.track }}
-          status: completed
-          inAppUpdatePriority: 2
-          userFraction: 0.1
-          whatsNewDirectory: android/release-notes
-          mappingFile: android/app/build/outputs/mapping/release/mapping.txt
