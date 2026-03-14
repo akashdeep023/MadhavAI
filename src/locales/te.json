@@ -1,5 +1,9 @@
 {
-  "app": { "name": "మాధవ AI", "tagline": "రైతు నిర్ణయ సపోర్ట్ ప్లాట్‌ఫార్మ్", "version": "v1.0.0" },
+  "app": {
+    "name": "మాధవ AI",
+    "tagline": "రైతు నిర్ణయ సపోర్ట్ ప్లాట్‌ఫార్మ్",
+    "version": "v1.0.0"
+  },
   "auth": {
     "login": "లాగిన్",
     "logout": "లాగআউట్",
@@ -55,26 +59,35 @@
     "weather": "వాతావరణం",
     "alerts": "అలర్టులు",
     "quickActions": "త్వరిత చర్యలు",
+    "quick_actions": "త్వరిత చర్యలు",
     "loading": "లోడ్ అవుతోంది...",
     "loadFailed": "డ్యాష్‌బోర్డ్ లోడ్ చేయడం విఫలమైంది",
     "lastUpdated": "చివరిసారి అప్‌డేట్ చేయబడింది",
+    "last_updated": "చివరిసారి అప్‌డేట్ చేయబడింది",
     "pending": "పెండింగ్",
     "nextActivity": "తరువాత కార్యకలాపం",
+    "next_activity": "తరువాత కార్యకలాపం",
     "viewMore": "మరిన్ని చూడండి",
     "marketPrices": "మార్కెట్ ధరలు",
+    "market_prices": "మార్కెట్ ధరలు",
     "cropStatus": "పంట స్థితి",
+    "crop_status": "పంట స్థితి",
     "recommendations": "సిఫారసులు",
-    "upcomingActivities": "రాబోయే కార్యకలాపాలు"
+    "upcomingActivities": "రాబోయే కార్యకలాపాలు",
+    "upcoming_activities": "రాబోయే కార్యకలాపాలు",
+    "insights": "అంతర్దృష్టి"
   },
   "features": {
     "weather": "వాతావరణం",
-    "schemes": "పథకాలు",
-    "market": "మార్కెట్",
+    "schemes": "ప్రభుత్వ పథకాలు",
+    "market": "మార్కెట్ ధరలు",
     "training": "శిక్షణ",
     "recommendations": "సిఫారసులు",
     "soil": "నేల ఆరోగ్యం",
     "alerts": "అలర్టులు",
-    "settings": "సెట్టింగ్‌లు"
+    "settings": "సెట్టింగ్‌లు",
+    "cropplanner": "పంట ప్లానర్",
+    "dashboard": "డ్యాష్‌బోర్డ్"
   },
   "weather": {
     "forecast": "వాతావరణ సూచన",
@@ -83,6 +96,7 @@
     "humidity": "ఆర్ద్రత",
     "rainfall": "వర్షపాతం",
     "windSpeed": "గాలి వేగం",
+    "wind": "గాలి వేగం",
     "clearSky": "맑은 하늘",
     "partlyCloudy": "పాక్షికంగా మేఘావృతం",
     "cloudy": "మేఘావృతం",
@@ -215,7 +229,14 @@
     "error": "లోపం",
     "success": "విజయం",
     "warning": "హెచ్చరిక",
-    "info": "సమాచారం"
+    "info": "సమాచారం",
+    "view_more": "మరిన్ని చూడండి",
+    "view_all": "అన్నీ చూడండి",
+    "tap_to_view": "చూడటానికి నొక్కండి",
+    "today": "ఈ రోజు",
+    "tomorrow": "రేపు",
+    "days": "రోజులు",
+    "confidence": "విశ్వాసం"
   },
   "soilTypes": {
     "loamy": "దోమట",
@@ -247,5 +268,16 @@
     "serverError": "సర్వర్ లోపం. దయచేసి తరువాత ప్రయత్నించండి.",
     "unknownError": "తెలియని లోపం సంభవించింది.",
     "tryAgain": "దయచేసి మళ్లీ ప్రయత్నించండి."
+  },
+  "crop": {
+    "stage": "దశ",
+    "area": "విస్తీర్ణం",
+    "next_activity": "తరువాత కార్యకలాపం",
+    "health": {
+      "good": "మంచిది",
+      "fair": "సరే",
+      "poor": "పేద",
+      "excellent": "అద్భుతం"
+    }
   }
 }

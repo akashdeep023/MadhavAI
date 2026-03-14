@@ -59,26 +59,35 @@
     "weather": "Weather",
     "alerts": "Alerts",
     "quickActions": "Quick Actions",
+    "quick_actions": "Quick Actions",
     "loading": "Loading...",
     "loadFailed": "Failed to load dashboard",
     "lastUpdated": "Last updated",
+    "last_updated": "Last updated",
     "pending": "pending",
     "nextActivity": "Next activity",
+    "next_activity": "Next activity",
     "viewMore": "View More",
     "marketPrices": "Market Prices",
+    "market_prices": "Market Prices",
     "cropStatus": "Crop Status",
+    "crop_status": "Crop Status",
     "recommendations": "Recommendations",
-    "upcomingActivities": "Upcoming Activities"
+    "upcomingActivities": "Upcoming Activities",
+    "upcoming_activities": "Upcoming Activities",
+    "insights": "Insights"
   },
   "features": {
     "weather": "Weather",
-    "schemes": "Schemes",
-    "market": "Market",
+    "schemes": "Government Schemes",
+    "market": "Market Prices",
     "training": "Training",
     "recommendations": "Recommendations",
     "soil": "Soil Health",
     "alerts": "Alerts",
-    "settings": "Settings"
+    "settings": "Settings",
+    "cropplanner": "Crop Planner",
+    "dashboard": "Dashboard"
   },
   "weather": {
     "forecast": "Weather Forecast",
@@ -87,6 +96,7 @@
     "humidity": "Humidity",
     "rainfall": "Rainfall",
     "windSpeed": "Wind Speed",
+    "wind": "Wind",
     "clearSky": "Clear Sky",
     "partlyCloudy": "Partly Cloudy",
     "cloudy": "Cloudy",
@@ -199,6 +209,13 @@
     "back": "Back",
     "loading": "Loading...",
     "viewMore": "View More",
+    "view_more": "View More",
+    "view_all": "View All",
+    "tap_to_view": "Tap to view",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "days": "days",
+    "confidence": "confidence",
     "save": "Save",
     "cancel": "Cancel",
     "ok": "OK",
@@ -239,6 +256,17 @@
     "soybean": "Soybean",
     "pulses": "Pulses",
     "vegetables": "Vegetables"
+  },
+  "crop": {
+    "stage": "Stage",
+    "area": "Area",
+    "next_activity": "Next Activity",
+    "health": {
+      "good": "Good",
+      "fair": "Fair",
+      "poor": "Poor",
+      "excellent": "Excellent"
+    }
   },
   "voice": {
     "tapToSpeak": "Tap to speak your input",

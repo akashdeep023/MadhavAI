@@ -61,7 +61,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
       setDashboardData(data);
     } catch (err) {
       console.error('Error loading dashboard:', err);
-      setError(translate('dashboard.error.load_failed'));
+      setError(translate('dashboard.loadFailed'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -118,7 +118,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
     if (data.cropStatus.length > 0) {
       const crop = data.cropStatus[0];
       parts.push(
-        `${crop.cropName}: ${crop.stage}, ${translate('dashboard.next_activity')} ${
+        `${crop.cropName}: ${crop.stage}, ${translate('dashboard.nextActivity')} ${
           crop.nextActivity
         }`
       );
@@ -233,7 +233,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({
           {/* Last updated */}
           <View style={styles.footer}>
             <Text style={styles.lastUpdated}>
-              {translate('dashboard.last_updated')}:{' '}
+              {translate('dashboard.lastUpdated')}:{' '}
               {new Date(dashboardData.lastUpdated).toLocaleTimeString()}
             </Text>
           </View>

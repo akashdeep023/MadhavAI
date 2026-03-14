@@ -29,12 +29,7 @@ import { AlertScheduler } from './src/services/alert/AlertScheduler';
 import { marketService } from './src/services/market/MarketService';
 import { profileManager } from './src/services/profile/ProfileManager';
 import { DatabaseService } from './src/services/storage/DatabaseService';
-import { initializeTranslationServices } from './src/hooks/useTranslation';
-import TranslationService from './src/services/translation/TranslationService';
-import TranslationStorage from './src/services/translation/TranslationStorage';
-import TranslationLoader from './src/services/translation/TranslationLoader';
-import TranslationContentManager from './src/services/translation/TranslationContentManager';
-import LanguagePreferenceManager from './src/services/translation/LanguagePreferenceManager';
+import { initializeTranslationServices, useTranslation } from './src/hooks/useTranslation';
 import { encryptedStorage } from './src/services/storage/EncryptedStorage';
 
 // Initialize services
@@ -49,35 +44,6 @@ const aggregator = new DashboardAggregator(
 );
 const priorityEngine = new PriorityEngine();
 const dashboardService = new DashboardService(aggregator, priorityEngine);
-
-// Initialize translation services
-const translationStorage = new TranslationStorage(db);
-const translationContentManager = new TranslationContentManager(translationStorage);
-const translationLoader = new TranslationLoader(translationStorage, translationContentManager);
-const translationService = new TranslationService(translationStorage);
-const languagePreferenceManager = new LanguagePreferenceManager(encryptedStorage, profileManager);
-
-// Initialize translation system
-const initTranslation = async () => {
-  try {
-    await translationStorage.initialize();
-    await translationLoader.loadBundledTranslations();
-    await translationService.initialize();
-    
-    // Get user's language preference
-    const userId = await encryptedStorage.getItem<string>('current_user_id');
-    if (userId) {
-      const preferredLanguage = await languagePreferenceManager.getLanguagePreference(userId);
-      await translationService.setLanguage(preferredLanguage);
-    }
-  } catch (error) {
-    logger.error('Failed to initialize translation services', error);
-  }
-};
-
-// Initialize translation hook - must be called before any component renders
-// Translation loading happens async in initTranslation()
-initializeTranslationServices(translationService, languagePreferenceManager);
 
 // Create navigation stack
 const Stack = createNativeStackNavigator();
@@ -157,8 +123,8 @@ function App(): React.JSX.Element {
       try {
         logger.info('Application started');
         
-        // Initialize translation services first
-        await initTranslation();
+        // Restore saved language preference
+        await initializeTranslationServices();
         
         // Check if user is authenticated
         const authToken = await encryptedStorage.getItem<string>('auth_token');
@@ -202,15 +168,15 @@ function App(): React.JSX.Element {
           }}>
           <Stack.Screen name="Login" component={LoginWrapper} options={{ headerShown: false }} />
           <Stack.Screen name="Registration" component={RegistrationWrapper} options={{ headerShown: false }} />
-          <Stack.Screen name="Dashboard" component={DashboardWrapper} options={{ title: translationService.translate('dashboard.title') }} />
-          <Stack.Screen name="Weather" component={WeatherScreen} options={{ title: translationService.translate('weather.forecast') }} />
-          <Stack.Screen name="Market" component={MarketScreen} options={{ title: translationService.translate('market.prices') }} />
-          <Stack.Screen name="Schemes" component={SchemesScreen} options={{ title: translationService.translate('schemes.title') }} />
-          <Stack.Screen name="Training" component={TrainingScreen} options={{ title: translationService.translate('training.title') }} />
-          <Stack.Screen name="Recommendations" component={RecommendationsScreen} options={{ title: translationService.translate('recommendations.title') }} />
-          <Stack.Screen name="SoilHealth" component={SoilHealthScreen} options={{ title: translationService.translate('soil.health') }} />
-          <Stack.Screen name="Alerts" component={AlertsScreen} options={{ title: translationService.translate('alerts.title') }} />
-          <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: translationService.translate('settings.title') }} />
+          <Stack.Screen name="Dashboard" component={DashboardWrapper} options={{ title: 'Dashboard' }} />
+          <Stack.Screen name="Weather" component={WeatherScreen} options={{ title: 'Weather Forecast' }} />
+          <Stack.Screen name="Market" component={MarketScreen} options={{ title: 'Market Prices' }} />
+          <Stack.Screen name="Schemes" component={SchemesScreen} options={{ title: 'Government Schemes' }} />
+          <Stack.Screen name="Training" component={TrainingScreen} options={{ title: 'Training & Learning' }} />
+          <Stack.Screen name="Recommendations" component={RecommendationsScreen} options={{ title: 'Recommendations' }} />
+          <Stack.Screen name="SoilHealth" component={SoilHealthScreen} options={{ title: 'Soil Health' }} />
+          <Stack.Screen name="Alerts" component={AlertsScreen} options={{ title: 'Alerts' }} />
+          <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
           <Stack.Screen name="CropPlanner" component={PlaceholderScreen} initialParams={{ title: 'Crop Planner' }} options={{ title: 'Crop Planner' }} />
         </Stack.Navigator>
       </NavigationContainer>

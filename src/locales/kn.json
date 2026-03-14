@@ -1,5 +1,9 @@
 {
-  "app": { "name": "ಮಾಧವ AI", "tagline": "ರೈತ ನಿರ್ಧಾರ ಸಹಾಯ ವೇದಿ", "version": "v1.0.0" },
+  "app": {
+    "name": "ಮಾಧವ AI",
+    "tagline": "ರೈತ ನಿರ್ಧಾರ ಸಹಾಯ ವೇದಿ",
+    "version": "v1.0.0"
+  },
   "auth": {
     "login": "ಲಾಗಿನ್",
     "logout": "ಲಾಗ್ಔಟ್",
@@ -55,26 +59,35 @@
     "weather": "ಹವಾಮಾನ",
     "alerts": "ಎಚ್ಚರಿಕೆಗಳು",
     "quickActions": "ತ್ವರಿತ ಕ್ರಿಯೆಗಳು",
+    "quick_actions": "ತ್ವರಿತ ಕ್ರಿಯೆಗಳು",
     "loading": "ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
     "loadFailed": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ",
     "lastUpdated": "ಕೊನೆಯ ಬಾರಿ ನವೀಕರಿಸಲಾಗಿದೆ",
+    "last_updated": "ಕೊನೆಯ ಬಾರಿ ನವೀಕರಿಸಲಾಗಿದೆ",
     "pending": "ಬಾಕಿ",
     "nextActivity": "ಮುಂದಿನ ಚಟುವಟಿಕೆ",
+    "next_activity": "ಮುಂದಿನ ಚಟುವಟಿಕೆ",
     "viewMore": "ಹೆಚ್ಚು ನೋಡಿ",
     "marketPrices": "ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು",
+    "market_prices": "ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು",
     "cropStatus": "ಫಸಲಿನ ಸ್ಥಿತಿ",
+    "crop_status": "ಫಸಲಿನ ಸ್ಥಿತಿ",
     "recommendations": "ಶಿಫಾರಸುಗಳು",
-    "upcomingActivities": "ಮುಂಬರುವ ಚಟುವಟಿಕೆಗಳು"
+    "upcomingActivities": "ಮುಂಬರುವ ಚಟುವಟಿಕೆಗಳು",
+    "upcoming_activities": "ಮುಂಬರುವ ಚಟುವಟಿಕೆಗಳು",
+    "insights": "ಒಳನೋಟ"
   },
   "features": {
     "weather": "ಹವಾಮಾನ",
-    "schemes": "ಯೋಜನೆಗಳು",
-    "market": "ಮಾರುಕಟ್ಟೆ",
+    "schemes": "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
+    "market": "ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು",
     "training": "ತರಬೇತಿ",
     "recommendations": "ಶಿಫಾರಸುಗಳು",
     "soil": "ಮಣ್ಣಿನ ಆರೋಗ್ಯ",
     "alerts": "ಎಚ್ಚರಿಕೆಗಳು",
-    "settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು"
+    "settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+    "cropplanner": "ಬೆಳೆ ಯೋಜಕ",
+    "dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್"
   },
   "weather": {
     "forecast": "ಹವಾಮಾನ ಮುನ್ನೋಟ",
@@ -83,6 +96,7 @@
     "humidity": "ಆರ್ದ್ರತೆ",
     "rainfall": "ಮಳೆ",
     "windSpeed": "ಗಾಳಿಯ ವೇಗ",
+    "wind": "ಗಾಳಿಯ ವೇಗ",
     "clearSky": "맑은 하늘",
     "partlyCloudy": "ಭಾಗಶಃ ಮೇಘಾವೃತ",
     "cloudy": "ಮೇಘಾವೃತ",
@@ -215,7 +229,14 @@
     "error": "ದೋಷ",
     "success": "ಯಶಸ್ಸು",
     "warning": "ಎಚ್ಚರಿಕೆ",
-    "info": "ಮಾಹಿತಿ"
+    "info": "ಮಾಹಿತಿ",
+    "view_more": "ಹೆಚ್ಚು ನೋಡಿ",
+    "view_all": "ಎಲ್ಲವನ್ನೂ ನೋಡಿ",
+    "tap_to_view": "ನೋಡಲು ಟ್ಯಾಪ್ ಮಾಡಿ",
+    "today": "ಇಂದು",
+    "tomorrow": "ನಾಳೆ",
+    "days": "ದಿನಗಳು",
+    "confidence": "ವಿಶ್ವಾಸ"
   },
   "soilTypes": {
     "loamy": "ಲೋಮಿ",
@@ -247,5 +268,16 @@
     "serverError": "ಸರ್ವರ್ ದೋಷ. ದಯವಿಟ್ಟು ನಂತರ ಪ್ರಯತ್ನಿಸಿ.",
     "unknownError": "ಅಜ್ಞಾತ ದೋಷ ಸಂಭವಿಸಿದೆ.",
     "tryAgain": "ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ."
+  },
+  "crop": {
+    "stage": "ಹಂತ",
+    "area": "ಪ್ರದೇಶ",
+    "next_activity": "ಮುಂದಿನ ಚಟುವಟಿಕೆ",
+    "health": {
+      "good": "ಉತ್ತಮ",
+      "fair": "ಸರಿ",
+      "poor": "ಕಳಪೆ",
+      "excellent": "ಅತ್ಯುತ್ತಮ"
+    }
   }
 }

@@ -60,26 +60,35 @@
     "weather": "मौसम",
     "alerts": "अलर्ट",
     "quickActions": "त्वरित कार्य",
+    "quick_actions": "त्वरित कार्य",
     "loading": "लोड हो रहा है...",
     "loadFailed": "डैशबोर्ड लोड करने में विफल",
     "lastUpdated": "अंतिम अपडेट",
+    "last_updated": "अंतिम अपडेट",
     "pending": "लंबित",
     "nextActivity": "अगली गतिविधि",
+    "next_activity": "अगली गतिविधि",
     "viewMore": "और देखें",
     "marketPrices": "बाजार मूल्य",
+    "market_prices": "बाजार मूल्य",
     "cropStatus": "फसल की स्थिति",
+    "crop_status": "फसल की स्थिति",
     "recommendations": "सिफारिशें",
-    "upcomingActivities": "आगामी गतिविधियां"
+    "upcomingActivities": "आगामी गतिविधियां",
+    "upcoming_activities": "आगामी गतिविधियां",
+    "insights": "अंतर्दृष्टि"
   },
   "features": {
     "weather": "मौसम",
-    "schemes": "योजनाएं",
-    "market": "बाजार",
+    "schemes": "सरकारी योजनाएं",
+    "market": "बाजार मूल्य",
     "training": "प्रशिक्षण",
     "recommendations": "सिफारिशें",
     "soil": "मिट्टी स्वास्थ्य",
     "alerts": "अलर्ट",
-    "settings": "सेटिंग्स"
+    "settings": "सेटिंग्स",
+    "cropplanner": "फसल योजनाकार",
+    "dashboard": "डैशबोर्ड"
   },
   "weather": {
     "forecast": "मौसम पूर्वानुमान",
@@ -88,6 +97,7 @@
     "humidity": "आर्द्रता",
     "rainfall": "वर्षा",
     "windSpeed": "हवा की गति",
+    "wind": "हवा",
     "clearSky": "साफ आसमान",
     "partlyCloudy": "आंशिक बादल",
     "cloudy": "बादल छाए",
@@ -201,6 +211,13 @@
     "back": "वापस",
     "loading": "लोड हो रहा है...",
     "viewMore": "और देखें",
+    "view_more": "और देखें",
+    "view_all": "सभी देखें",
+    "tap_to_view": "देखने के लिए टैप करें",
+    "today": "आज",
+    "tomorrow": "कल",
+    "days": "दिन",
+    "confidence": "विश्वास",
     "save": "सहेजें",
     "cancel": "रद्द करें",
     "ok": "ठीक है",
@@ -241,6 +258,17 @@
     "soybean": "सोयाबीन",
     "pulses": "दालें",
     "vegetables": "सब्जियां"
+  },
+  "crop": {
+    "stage": "अवस्था",
+    "area": "क्षेत्र",
+    "next_activity": "अगली गतिविधि",
+    "health": {
+      "good": "अच्छा",
+      "fair": "ठीक",
+      "poor": "खराब",
+      "excellent": "उत्कृष्ट"
+    }
   },
   "voice": {
     "tapToSpeak": "बोलने के लिए टैप करें",

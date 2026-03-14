@@ -1,5 +1,9 @@
 {
-  "app": { "name": "ਮਾਧਵ AI", "tagline": "ਕਿਸਾਨ ਨਿਰਣਯ ਸਮਰਥਨ ਪਲੇਟਫਾਰਮ", "version": "v1.0.0" },
+  "app": {
+    "name": "ਮਾਧਵ AI",
+    "tagline": "ਕਿਸਾਨ ਨਿਰਣਯ ਸਮਰਥਨ ਪਲੇਟਫਾਰਮ",
+    "version": "v1.0.0"
+  },
   "auth": {
     "login": "ਲਾਗਇਨ",
     "logout": "ਲਾਗਆਉਟ",
@@ -55,26 +59,35 @@
     "weather": "ਮੌਸਮ",
     "alerts": "ਚੇਤਾਵਨੀਆਂ",
     "quickActions": "ਤੇਜ਼ ਕਾਰਵਾਈਆਂ",
+    "quick_actions": "ਤੇਜ਼ ਕਾਰਵਾਈਆਂ",
     "loading": "ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
     "loadFailed": "ਡੈਸ਼ਬੋਰਡ ਲੋਡ ਕਰਨ ਵਿੱਚ ਅਸਫਲ",
     "lastUpdated": "ਆਖਰੀ ਅਪਡੇਟ",
+    "last_updated": "ਆਖਰੀ ਅਪਡੇਟ",
     "pending": "ਤਲਬੀ",
     "nextActivity": "ਅਗਲੀ ਗਤੀਵਿਧੀ",
+    "next_activity": "ਅਗਲੀ ਗਤੀਵਿਧੀ",
     "viewMore": "ਹੋਰ ਵੇਖੋ",
     "marketPrices": "ਬਾਜ਼ਾਰ ਭਾਅ",
+    "market_prices": "ਬਾਜ਼ਾਰ ਭਾਅ",
     "cropStatus": "ਫਸਲ ਦੀ ਹਾਲਤ",
+    "crop_status": "ਫਸਲ ਦੀ ਹਾਲਤ",
     "recommendations": "ਸਿਫਾਰਿਸ਼ਾਂ",
-    "upcomingActivities": "ਆਉਣ ਵਾਲੀਆਂ ਗਤੀਵਿਧੀਆਂ"
+    "upcomingActivities": "ਆਉਣ ਵਾਲੀਆਂ ਗਤੀਵਿਧੀਆਂ",
+    "upcoming_activities": "ਆਉਣ ਵਾਲੀਆਂ ਗਤੀਵਿਧੀਆਂ",
+    "insights": "ਸੂਝ"
   },
   "features": {
     "weather": "ਮੌਸਮ",
-    "schemes": "ਯੋਜਨਾਵਾਂ",
-    "market": "ਬਾਜ਼ਾਰ",
-    "training": "ਪ੍ਰਿੰਸ਼ਿਕਿਟ",
+    "schemes": "ਸਰਕਾਰੀ ਯੋਜਨਾਵਾਂ",
+    "market": "ਬਾਜ਼ਾਰ ਭਾਅ",
+    "training": "ਸਿਖਲਾਈ",
     "recommendations": "ਸਿਫਾਰਿਸ਼ਾਂ",
     "soil": "ਮਿੱਟੀ ਦਾ ਸਿਹਤ",
     "alerts": "ਚੇਤਾਵਨੀਆਂ",
-    "settings": "ਸੈਟਿੰਗਾਂ"
+    "settings": "ਸੈਟਿੰਗਾਂ",
+    "cropplanner": "ਫਸਲ ਯੋਜਨਾਕਾਰ",
+    "dashboard": "ਡੈਸ਼ਬੋਰਡ"
   },
   "weather": {
     "forecast": "ਮੌਸਮ ਭਵਿੱਖਿਤ",
@@ -83,6 +96,7 @@
     "humidity": "ਨਮੀ",
     "rainfall": "ਵਰਖਾ",
     "windSpeed": "ਹਵਾ ਦੀ ਗਤੀ",
+    "wind": "ਹਵਾ ਦੀ ਗਤੀ",
     "clearSky": "ਸਾਫ ਆਕਾਸ਼",
     "partlyCloudy": "ਭਾਗ ਵਾਲਾ ਮੇਘਲਾ",
     "cloudy": "ਮੇਘਲਾ",
@@ -215,7 +229,14 @@
     "error": "ਗਲਤੀ",
     "success": "ਸਫਲਤਾ",
     "warning": "ਚੇਤਾਵਨੀ",
-    "info": "ਜਾਣਕਾਰੀ"
+    "info": "ਜਾਣਕਾਰੀ",
+    "view_more": "ਹੋਰ ਵੇਖੋ",
+    "view_all": "ਸਭ ਵੇਖੋ",
+    "tap_to_view": "ਵੇਖਣ ਲਈ ਟੈਪ ਕਰੋ",
+    "today": "ਅੱਜ",
+    "tomorrow": "ਕੱਲ੍ਹ",
+    "days": "ਦਿਨ",
+    "confidence": "ਭਰੋਸਾ"
   },
   "soilTypes": {
     "loamy": "ਦੋਮਟ",
@@ -247,5 +268,16 @@
     "serverError": "ਸਰਵਰ ਗਲਤੀ। ਕਿਰਪਾ ਕਰਕੇ ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਪ੍ਰਯਾਸ ਕਰੋ।",
     "unknownError": "ਇੱਕ ਅਣਜਾਣ ਗਲਤੀ ਆਈ ਹੈ।",
     "tryAgain": "ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਪ੍ਰਯਾਸ ਕਰੋ।"
+  },
+  "crop": {
+    "stage": "ਪੜਾਅ",
+    "area": "ਖੇਤਰ",
+    "next_activity": "ਅਗਲੀ ਗਤੀਵਿਧੀ",
+    "health": {
+      "good": "ਚੰਗਾ",
+      "fair": "ਠੀਕ",
+      "poor": "ਮਾੜਾ",
+      "excellent": "ਸ਼ਾਨਦਾਰ"
+    }
   }
 }

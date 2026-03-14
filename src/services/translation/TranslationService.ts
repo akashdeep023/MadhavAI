@@ -17,6 +17,16 @@ class TranslationService {
   private translations: Map<LanguageCode, Map<TranslationCategory, TranslationContent>> = new Map();
   private storage: TranslationStorage;
   private fallbackLanguage: LanguageCode = 'hi';
+  private listeners: Set<() => void> = new Set();
+
+  onTranslationsChanged(listener: () => void): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  private notifyListeners(): void {
+    this.listeners.forEach((l) => l());
+  }
 
   constructor(storage: TranslationStorage) {
     this.storage = storage;
@@ -46,6 +56,7 @@ class TranslationService {
       }
 
       this.translations.set(language, languageTranslations);
+      this.notifyListeners();
     } catch (error) {
       console.error(`Failed to load translations for ${language}:`, error);
       // Load fallback language if current language fails

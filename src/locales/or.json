@@ -1,5 +1,9 @@
 {
-  "app": { "name": "ମାଧବ AI", "tagline": "କୃଷକ ନିର୍ଣ୍ଣୟ ସମର୍ଥନ ପ୍ଲାଟଫର୍ମ", "version": "v1.0.0" },
+  "app": {
+    "name": "ମାଧବ AI",
+    "tagline": "କୃଷକ ନିର୍ଣ୍ଣୟ ସମର୍ଥନ ପ୍ଲାଟଫର୍ମ",
+    "version": "v1.0.0"
+  },
   "auth": {
     "login": "ଲଗଇନ୍",
     "logout": "ଲଗାଉଟ୍",
@@ -55,26 +59,35 @@
     "weather": "ମୌସୁମ",
     "alerts": "ସୂଚନା",
     "quickActions": "ଦ୍ରୁତ କାର୍ଯ୍ୟକଳାପ",
+    "quick_actions": "ଦ୍ରୁତ କାର୍ଯ୍ୟକଳାପ",
     "loading": "ଲୋଡ୍ ହେଉଛି...",
     "loadFailed": "ଡ୍ୟାଶବୋର୍ଡ୍ ଲୋଡ୍ କରିବାରେ ବିଫଳ",
     "lastUpdated": "ଶେଷ ଅପଡେଟ୍",
+    "last_updated": "ଶେଷ ଅପଡେଟ୍",
     "pending": "ଅପେକ୍ଷମାନ",
     "nextActivity": "ପରବର୍ତ୍ତୀ କାର୍ଯ୍ୟକଳାପ",
+    "next_activity": "ପରବର୍ତ୍ତୀ କାର୍ଯ୍ୟକଳାପ",
     "viewMore": "ଅଧିକ ଦେଖନ୍ତୁ",
     "marketPrices": "ବାଜାର ମୂଲ୍ୟ",
+    "market_prices": "ବାଜାର ମୂଲ୍ୟ",
     "cropStatus": "ଫସଲର ଅବସ୍ଥା",
+    "crop_status": "ଫସଲର ଅବସ୍ଥା",
     "recommendations": "ସୁପାରିଶ",
-    "upcomingActivities": "ଆସନ୍ତା କାର୍ଯ୍ୟକଳାପ"
+    "upcomingActivities": "ଆସନ୍ତା କାର୍ଯ୍ୟକଳାପ",
+    "upcoming_activities": "ଆସନ୍ତା କାର୍ଯ୍ୟକଳାପ",
+    "insights": "ଅନ୍ତର୍ଦୃଷ୍ଟି"
   },
   "features": {
     "weather": "ମୌସୁମ",
-    "schemes": "ଯୋଜନା",
-    "market": "ବାଜାର",
+    "schemes": "ସରକାରୀ ଯୋଜନା",
+    "market": "ବାଜାର ମୂଲ୍ୟ",
     "training": "ପ୍ରଶିକ୍ଷଣ",
     "recommendations": "ସୁପାରିଶ",
     "soil": "ମାଟିର ସ୍ୱାସ୍ଥ୍ୟ",
     "alerts": "ସୂଚନା",
-    "settings": "ସେଟିଂସ୍"
+    "settings": "ସେଟିଂସ୍",
+    "cropplanner": "ଫସଲ ଯୋଜନାକାରୀ",
+    "dashboard": "ଡ୍ୟାଶବୋର୍ଡ୍"
   },
   "weather": {
     "forecast": "ମୌସୁମ ପୂର୍ବାନୁମାନ",
@@ -83,6 +96,7 @@
     "humidity": "ଆର୍ଦ୍ରତା",
     "rainfall": "ବର୍ଷା",
     "windSpeed": "ବାତାସର ବେଗ",
+    "wind": "ବାତାସର ବେଗ",
     "clearSky": "ସ୍ପଷ୍ଟ ଆକାଶ",
     "partlyCloudy": "ଆଂଶିକ ମେଘାବୃତ",
     "cloudy": "ମେଘାବୃତ",
@@ -215,7 +229,14 @@
     "error": "ତ୍ରୁଟି",
     "success": "ସଫଳତା",
     "warning": "ସୂଚନା",
-    "info": "ତଥ୍ୟ"
+    "info": "ତଥ୍ୟ",
+    "view_more": "ଅଧିକ ଦେଖନ୍ତୁ",
+    "view_all": "ସବୁ ଦେଖନ୍ତୁ",
+    "tap_to_view": "ଦେଖିବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ",
+    "today": "ଆଜି",
+    "tomorrow": "ଆସନ୍ତାକାଲ",
+    "days": "ଦିନ",
+    "confidence": "ବିଶ୍ୱାସ"
   },
   "soilTypes": {
     "loamy": "ଦୋମଟ",
@@ -247,5 +268,16 @@
     "serverError": "ସର୍ଭର୍ ତ୍ରୁଟି। ଦୟାକରି ପରେ ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ।",
     "unknownError": "ଏକ ଅଜ୍ଞାତ ତ୍ରୁଟି ଘଟିଛି।",
     "tryAgain": "ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ।"
+  },
+  "crop": {
+    "stage": "ଅବସ୍ଥା",
+    "area": "କ୍ଷେତ୍ର",
+    "next_activity": "ପରବର୍ତ୍ତୀ କାର୍ଯ୍ୟକଳାପ",
+    "health": {
+      "good": "ଭଲ",
+      "fair": "ଠିକ",
+      "poor": "ଖରାପ",
+      "excellent": "ଉତ୍କୃଷ୍ଟ"
+    }
   }
 }

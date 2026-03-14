@@ -1,5 +1,9 @@
 {
-  "app": { "name": "মাধব AI", "tagline": "কৃষক সিদ্ধান্ত সমর্থন প্ল্যাটফর্ম", "version": "v1.0.0" },
+  "app": {
+    "name": "মাধব AI",
+    "tagline": "কৃষক সিদ্ধান্ত সমর্থন প্ল্যাটফর্ম",
+    "version": "v1.0.0"
+  },
   "auth": {
     "login": "লগইন",
     "logout": "লগআউট",
@@ -55,26 +59,35 @@
     "weather": "আবহাওয়া",
     "alerts": "সতর্কতা",
     "quickActions": "দ্রুত কার্যক্রম",
+    "quick_actions": "দ্রুত কার্যক্রম",
     "loading": "লোড হচ্ছে...",
     "loadFailed": "ড্যাশবোর্ড লোড করতে ব্যর্থ",
     "lastUpdated": "সর্বশেষ আপডেট",
+    "last_updated": "সর্বশেষ আপডেট",
     "pending": "মুলতুবি",
     "nextActivity": "পরবর্তী কার্যক্রম",
+    "next_activity": "পরবর্তী কার্যক্রম",
     "viewMore": "আরও দেখুন",
     "marketPrices": "বাজার মূল্য",
+    "market_prices": "বাজার মূল্য",
     "cropStatus": "ফসলের অবস্থা",
+    "crop_status": "ফসলের অবস্থা",
     "recommendations": "সুপারিশ",
-    "upcomingActivities": "আগামী কার্যক্রম"
+    "upcomingActivities": "আগামী কার্যক্রম",
+    "upcoming_activities": "আগামী কার্যক্রম",
+    "insights": "অন্তর্দৃষ্টি"
   },
   "features": {
     "weather": "আবহাওয়া",
-    "schemes": "প্রকল্প",
-    "market": "বাজার",
+    "schemes": "সরকারি প্রকল্প",
+    "market": "বাজার মূল্য",
     "training": "প্রশিক্ষণ",
     "recommendations": "সুপারিশ",
     "soil": "মাটির স্বাস্থ্য",
     "alerts": "সতর্কতা",
-    "settings": "সেটিংস"
+    "settings": "সেটিংস",
+    "cropplanner": "ফসল পরিকল্পনাকারী",
+    "dashboard": "ড্যাশবোর্ড"
   },
   "weather": {
     "forecast": "আবহাওয়া পূর্বাভাস",
@@ -83,6 +96,7 @@
     "humidity": "আর্দ্রতা",
     "rainfall": "বৃষ্টিপাত",
     "windSpeed": "বাতাসের গতি",
+    "wind": "বাতাসের গতি",
     "clearSky": "পরিষ্কার আকাশ",
     "partlyCloudy": "আংশিক মেঘলা",
     "cloudy": "মেঘলা",
@@ -215,7 +229,14 @@
     "error": "ত্রুটি",
     "success": "সফল",
     "warning": "সতর্কতা",
-    "info": "তথ্য"
+    "info": "তথ্য",
+    "view_more": "আরও দেখুন",
+    "view_all": "সব দেখুন",
+    "tap_to_view": "দেখতে ট্যাপ করুন",
+    "today": "আজ",
+    "tomorrow": "আগামীকাল",
+    "days": "দিন",
+    "confidence": "আত্মবিশ্বাস"
   },
   "soilTypes": {
     "loamy": "দোমট",
@@ -247,5 +268,16 @@
     "serverError": "সার্ভার ত্রুটি। দয়া করে পরে আবার চেষ্টা করুন।",
     "unknownError": "একটি অজানা ত্রুটি ঘটেছে।",
     "tryAgain": "দয়া করে আবার চেষ্টা করুন।"
+  },
+  "crop": {
+    "stage": "পর্যায়",
+    "area": "এলাকা",
+    "next_activity": "পরবর্তী কার্যক্রম",
+    "health": {
+      "good": "ভালো",
+      "fair": "ঠিক আছে",
+      "poor": "খারাপ",
+      "excellent": "চমৎকার"
+    }
   }
 }

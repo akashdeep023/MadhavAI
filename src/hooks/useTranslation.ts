@@ -1,93 +1,111 @@
 /**
  * useTranslation Hook
- * React hook for accessing translation functionality
+ * Loads translations directly from bundled JSON files — no DB, no async delay.
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { LanguageCode, TranslationKey } from '../types/translation.types';
-import TranslationService from '../services/translation/TranslationService';
-import LanguagePreferenceManager from '../services/translation/LanguagePreferenceManager';
+import { useState, useCallback, useEffect } from 'react';
+import { LanguageCode } from '../types/translation.types';
+import { encryptedStorage } from '../services/storage/EncryptedStorage';
 
-interface UseTranslationResult {
-  t: (key: TranslationKey, params?: { [key: string]: string | number }) => string;
-  translate: (key: TranslationKey, params?: { [key: string]: string | number }) => string;
-  language: LanguageCode;
-  setLanguage: (language: LanguageCode) => Promise<void>;
-  changeLanguage: (language: LanguageCode) => Promise<void>;
-  isLoading: boolean;
-  error: Error | null;
+// Import all locale JSONs directly
+import en from '../locales/en.json';
+import hi from '../locales/hi.json';
+import ta from '../locales/ta.json';
+import te from '../locales/te.json';
+import kn from '../locales/kn.json';
+import mr from '../locales/mr.json';
+import bn from '../locales/bn.json';
+import gu from '../locales/gu.json';
+import pa from '../locales/pa.json';
+import ml from '../locales/ml.json';
+import or from '../locales/or.json';
+
+const LOCALES: Record<LanguageCode, Record<string, any>> = {
+  en, hi, ta, te, kn, mr, bn, gu, pa, ml, or,
+};
+
+// Global language state so all hook instances stay in sync
+let currentLanguage: LanguageCode = 'hi';
+const listeners = new Set<() => void>();
+
+function notifyAll() {
+  listeners.forEach((fn) => fn());
 }
 
-let translationServiceInstance: TranslationService | null = null;
-let languagePreferenceManagerInstance: LanguagePreferenceManager | null = null;
-
-/**
- * Initialize translation service instances (called once from App.tsx after services are ready)
- */
-export function initializeTranslationServices(
-  translationService: TranslationService,
-  languagePreferenceManager: LanguagePreferenceManager
-): void {
-  translationServiceInstance = translationService;
-  languagePreferenceManagerInstance = languagePreferenceManager;
-}
-
-/**
- * Hook for translation functionality
- */
-export function useTranslation(): UseTranslationResult {
-  // Sync language state from the already-initialized service instance
-  const [language, setLanguageState] = useState<LanguageCode>(
-    () => translationServiceInstance?.getCurrentLanguage() ?? 'hi'
-  );
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  // On mount, sync language in case service was initialized after hook first ran
-  useEffect(() => {
-    if (translationServiceInstance) {
-      setLanguageState(translationServiceInstance.getCurrentLanguage());
+/** Resolve a dot-notation key like "dashboard.title" from a nested object */
+function resolve(obj: Record<string, any>, key: string): string {
+  // Strip leading "ui." prefix if present
+  const path = key.startsWith('ui.') ? key.slice(3) : key;
+  const parts = path.split('.');
+  let cur: any = obj;
+  for (const part of parts) {
+    if (cur && typeof cur === 'object' && part in cur) {
+      cur = cur[part];
+    } else {
+      return key; // key not found — return raw key so it's obvious
     }
+  }
+  return typeof cur === 'string' ? cur : key;
+}
+
+function translate(key: string, lang: LanguageCode, params?: Record<string, string | number>): string {
+  const locale = LOCALES[lang] ?? LOCALES['hi'];
+  let text = resolve(locale, key);
+
+  // Fallback to English if not found in current language
+  if (text === key && lang !== 'en') {
+    text = resolve(LOCALES['en'], key);
+  }
+
+  if (!params) return text;
+  return text.replace(/\{(\w+)\}/g, (_, k) => (params[k] !== undefined ? String(params[k]) : `{${k}}`));
+}
+
+export function useTranslation() {
+  const [lang, setLang] = useState<LanguageCode>(currentLanguage);
+
+  // Subscribe to global language changes
+  useEffect(() => {
+    // Sync in case language changed before this component mounted
+    setLang(currentLanguage);
+
+    const update = () => setLang(currentLanguage);
+    listeners.add(update);
+    return () => { listeners.delete(update); };
   }, []);
 
-  // Translation function - service is already initialized by App.tsx, just call translate
   const t = useCallback(
-    (key: TranslationKey, params?: { [key: string]: string | number }): string => {
-      if (!translationServiceInstance) {
-        return key;
-      }
-      return translationServiceInstance.translate(key, params);
-    },
-    // Re-memoize when language changes so components re-render with new translations
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [language]
+    (key: string, params?: Record<string, string | number>) => translate(key, lang, params),
+    [lang],
   );
 
-  // Set language function
-  const setLanguage = useCallback(async (newLanguage: LanguageCode): Promise<void> => {
-    try {
-      if (!translationServiceInstance || !languagePreferenceManagerInstance) {
-        throw new Error('Translation services not initialized');
-      }
-
-      setIsLoading(true);
-      await translationServiceInstance.setLanguage(newLanguage);
-      await languagePreferenceManagerInstance.setRegistrationLanguage(newLanguage);
-      setLanguageState(newLanguage);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to change language'));
-    } finally {
-      setIsLoading(false);
-    }
+  const setLanguage = useCallback(async (newLang: LanguageCode) => {
+    currentLanguage = newLang;
+    // Persist preference
+    await encryptedStorage.setItem('preferred_language', newLang);
+    notifyAll();
   }, []);
 
   return {
     t,
     translate: t,
-    language,
+    language: lang,
     setLanguage,
     changeLanguage: setLanguage,
-    isLoading,
-    error,
+    isLoading: false,
+    error: null,
   };
+}
+
+/** Call once at app start to restore saved language preference */
+export async function initializeTranslationServices(): Promise<void> {
+  try {
+    const saved = await encryptedStorage.getItem<LanguageCode>('preferred_language');
+    if (saved && saved in LOCALES) {
+      currentLanguage = saved;
+      notifyAll();
+    }
+  } catch {
+    // default 'hi' stays
+  }
 }

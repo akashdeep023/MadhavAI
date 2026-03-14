@@ -1,5 +1,9 @@
 {
-  "app": { "name": "માધવ AI", "tagline": "ખેડૂત નિર્ણય આધાર મંચ", "version": "v1.0.0" },
+  "app": {
+    "name": "માધવ AI",
+    "tagline": "ખેડૂત નિર્ણય આધાર મંચ",
+    "version": "v1.0.0"
+  },
   "auth": {
     "login": "લોગિન",
     "logout": "લોગઆઉટ",
@@ -55,26 +59,35 @@
     "weather": "હવામાન",
     "alerts": "ચેતવણીઓ",
     "quickActions": "ઝડપી ક્રિયાઓ",
+    "quick_actions": "ઝડપી ક્રિયાઓ",
     "loading": "લોડ થઈ રહ્યું છે...",
     "loadFailed": "ડેશબોર્ડ લોડ કરવામાં અસફળ",
     "lastUpdated": "છેલ્લું અપડેટ",
+    "last_updated": "છેલ્લું અપડેટ",
     "pending": "સ્થગિત",
     "nextActivity": "આગલી ક્રિયા",
+    "next_activity": "આગલી ક્રિયા",
     "viewMore": "વધુ જુઓ",
     "marketPrices": "બાજાર ભાવ",
+    "market_prices": "બાજાર ભાવ",
     "cropStatus": "ફળિયાની સ્થિતિ",
+    "crop_status": "ફળિયાની સ્થિતિ",
     "recommendations": "સલાહ",
-    "upcomingActivities": "આગામી ક્રિયાઓ"
+    "upcomingActivities": "આગામી ક્રિયાઓ",
+    "upcoming_activities": "આગામી ક્રિયાઓ",
+    "insights": "આંતરદૃષ્ટિ"
   },
   "features": {
     "weather": "હવામાન",
-    "schemes": "યોજનાઓ",
-    "market": "બાજાર",
+    "schemes": "સરકારી યોજનાઓ",
+    "market": "બાજાર ભાવ",
     "training": "તાલીમ",
     "recommendations": "સલાહ",
     "soil": "માટીનું આરોગ્ય",
     "alerts": "ચેતવણીઓ",
-    "settings": "સેટિંગ્સ"
+    "settings": "સેટિંગ્સ",
+    "cropplanner": "પાક આયોજક",
+    "dashboard": "ડેશબોર્ડ"
   },
   "weather": {
     "forecast": "હવામાન અંદાજ",
@@ -83,6 +96,7 @@
     "humidity": "ભેજ",
     "rainfall": "વરસાદ",
     "windSpeed": "હવાનો વેગ",
+    "wind": "હવાનો વેગ",
     "clearSky": "સાફ આકાશ",
     "partlyCloudy": "આંશિક વાદળી",
     "cloudy": "વાદળી",
@@ -215,7 +229,14 @@
     "error": "ભૂલ",
     "success": "સફળતા",
     "warning": "ચેતવણી",
-    "info": "માહિતી"
+    "info": "માહિતી",
+    "view_more": "વધુ જુઓ",
+    "view_all": "બધું જુઓ",
+    "tap_to_view": "જોવા ટૅપ કરો",
+    "today": "આજે",
+    "tomorrow": "આવતીકાલ",
+    "days": "દિવસ",
+    "confidence": "વિશ્વાસ"
   },
   "soilTypes": {
     "loamy": "દોમટ",
@@ -247,5 +268,16 @@
     "serverError": "સર્વર ભૂલ. કૃપા કરીને પછી પ્રયત્ન કરો.",
     "unknownError": "અજ્ઞાત ભૂલ થઈ છે.",
     "tryAgain": "કૃપા કરીને ફરી પ્રયત્ન કરો."
+  },
+  "crop": {
+    "stage": "તબક્કો",
+    "area": "વિસ્તાર",
+    "next_activity": "આગલી ક્રિયા",
+    "health": {
+      "good": "સારું",
+      "fair": "ઠીક",
+      "poor": "ખરાબ",
+      "excellent": "ઉત્કૃષ્ટ"
+    }
   }
 }
