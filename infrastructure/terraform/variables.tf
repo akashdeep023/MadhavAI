@@ -71,8 +71,14 @@ variable "alert_email" {
   type        = string
 }
 
+variable "xray_tracing_mode" {
+  description = "X-Ray tracing mode for Lambda functions: Active (trace all) or PassThrough (respect sampling rules)"
+  type        = string
+  default     = "PassThrough"
+}
+
 variable "enable_xray" {
   description = "Enable AWS X-Ray tracing"
   type        = bool
-  default     = true
+  default     = false
 }

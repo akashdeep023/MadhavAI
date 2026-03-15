@@ -23,7 +23,7 @@ resource "aws_lambda_function" "auth" {
   # Keeping Lambda outside VPC prevents timeout issues
   
   tracing_config {
-    mode = var.enable_xray ? "Active" : "PassThrough"
+    mode = "PassThrough"
   }
   
   tags = {
@@ -54,7 +54,7 @@ resource "aws_lambda_function" "recommendations" {
   }
   
   tracing_config {
-    mode = var.enable_xray ? "Active" : "PassThrough"
+    mode = "PassThrough"
   }
   
   tags = {
@@ -82,7 +82,7 @@ resource "aws_lambda_function" "schemes" {
   }
   
   tracing_config {
-    mode = var.enable_xray ? "Active" : "PassThrough"
+    mode = "PassThrough"
   }
   
   tags = {
@@ -109,7 +109,7 @@ resource "aws_lambda_function" "market_prices" {
   }
   
   tracing_config {
-    mode = var.enable_xray ? "Active" : "PassThrough"
+    mode = "PassThrough"
   }
   
   tags = {
@@ -137,7 +137,7 @@ resource "aws_lambda_function" "alerts" {
   }
   
   tracing_config {
-    mode = var.enable_xray ? "Active" : "PassThrough"
+    mode = "PassThrough"
   }
   
   tags = {
@@ -165,7 +165,7 @@ resource "aws_lambda_function" "training" {
   }
   
   tracing_config {
-    mode = var.enable_xray ? "Active" : "PassThrough"
+    mode = "PassThrough"
   }
   
   tags = {
@@ -192,7 +192,7 @@ resource "aws_lambda_function" "soil_health_upload" {
   }
   
   tracing_config {
-    mode = var.enable_xray ? "Active" : "PassThrough"
+    mode = "PassThrough"
   }
   
   tags = {
@@ -220,7 +220,7 @@ resource "aws_lambda_function" "soil_analysis" {
   }
   
   tracing_config {
-    mode = var.enable_xray ? "Active" : "PassThrough"
+    mode = "PassThrough"
   }
   
   tags = {
