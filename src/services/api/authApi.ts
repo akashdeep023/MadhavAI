@@ -80,8 +80,17 @@ class AuthAPI {
   async sendOTP(mobileNumber: string): Promise<OTPResponse> {
     try {
       const request: SendOTPRequest = { mobileNumber };
-      const response = await this.client.post<OTPResponse>('/auth/send-otp', request);
-      return response.data;
+      const response = await this.client.post<any>('/auth/send-otp', request);
+      const data = response.data;
+      // Backend returns expiresIn (seconds), map to expiresAt Date expected by frontend
+      return {
+        success: data.success,
+        message: data.message,
+        attemptsRemaining: data.attemptsRemaining ?? 3,
+        expiresAt: new Date(Date.now() + (data.expiresIn ?? 600) * 1000),
+        devOtp: data.devOtp,
+        smsActive: data.smsActive,
+      };
     } catch (error) {
       logger.error('Send OTP API error', error);
       throw error;
@@ -100,7 +109,21 @@ class AuthAPI {
     try {
       const request: VerifyOTPRequest = { mobileNumber, otp, deviceId };
       const response = await this.client.post('/auth/verify-otp', request);
-      return response.data;
+      const data = response.data;
+
+      if (data.success && data.authToken) {
+        return {
+          success: true,
+          message: data.message,
+          authToken: {
+            token: data.authToken.token,
+            userId: `user_${mobileNumber}`, // backend doesn't return userId, derive it
+            expiresAt: new Date(data.authToken.expiresAt),
+          },
+        };
+      }
+
+      return { success: false, message: data.message || 'Verification failed' };
     } catch (error) {
       logger.error('Verify OTP API error', error);
       throw error;

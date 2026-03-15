@@ -7,6 +7,8 @@
 import { AuthToken, OTPResponse } from '../../types/auth.types';
 import { otpService } from './OTPService';
 import { sessionManager } from './SessionManager';
+import { authAPI } from '../api/authApi';
+import { config } from '../../config/env';
 import { logger } from '../../utils/logger';
 import { ERROR_MESSAGES } from '../../config/constants';
 
@@ -26,6 +28,9 @@ class AuthenticationManager {
   async sendOTP(mobileNumber: string): Promise<OTPResponse> {
     try {
       logger.info(`Sending OTP to ${mobileNumber}`);
+      if (config.ENABLE_API) {
+        return await authAPI.sendOTP(mobileNumber);
+      }
       return await otpService.sendOTP(mobileNumber);
     } catch (error) {
       logger.error('Failed to send OTP', error);
@@ -49,7 +54,11 @@ class AuthenticationManager {
    */
   async verifyOTP(mobileNumber: string, otp: string, deviceId: string): Promise<LoginResult> {
     try {
-      // Validate OTP
+      if (config.ENABLE_API) {
+        return await authAPI.verifyOTP(mobileNumber, otp, deviceId);
+      }
+
+      // Local OTP validation (offline / dev mode)
       const validation = otpService.validateOTP(mobileNumber, otp);
 
       if (!validation.isValid) {

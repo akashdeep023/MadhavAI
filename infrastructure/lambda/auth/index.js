@@ -80,23 +80,21 @@ async function handleSendOTP(body) {
     let smsSent = false;
     try {
       await snsClient.send(new PublishCommand({
-        PhoneNumber: `+91${mobileNumber}`, // Add country code for India
+        PhoneNumber: `+91${mobileNumber}`,
         Message: `Your MadhavAI verification code is: ${otp}. Valid for ${OTP_EXPIRY_MINUTES} minutes. Do not share this code with anyone.`
       }));
-      console.log(`OTP sent successfully to ${mobileNumber}`);
       smsSent = true;
     } catch (smsError) {
-      console.error('SMS sending failed (SNS not active):', smsError);
-      console.log(`[FALLBACK] OTP for ${mobileNumber}: ${otp}`);
+      console.error('SNS SMS failed, OTP stored in DB for in-app display:', smsError);
     }
-    
+
     return createResponse(200, {
       success: true,
-      message: smsSent ? 'OTP sent successfully' : 'OTP generated (SMS inactive)',
-      expiresIn: OTP_EXPIRY_MINUTES * 60, // seconds
-      // Return OTP in-app when SNS SMS is not active — remove this once SNS is enabled
-      devOtp: smsSent ? undefined : otp,
-      smsActive: smsSent
+      message: 'OTP generated successfully',
+      expiresIn: OTP_EXPIRY_MINUTES * 60,
+      smsActive: smsSent,
+      // Only included when SNS is inactive — frontend shows it in app
+      ...(smsSent ? {} : { devOtp: otp }),
     });
     
   } catch (error) {

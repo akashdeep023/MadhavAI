@@ -63,8 +63,8 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         setStep('otp');
         setAttemptsRemaining(response.attemptsRemaining);
         startTimer(response.expiresAt);
-        // If SMS is inactive, show OTP in-app instead of "check SMS"
-        if (response.smsActive === false && response.devOtp) {
+        // SNS inactive → devOtp returned from backend → show in app
+        if (response.devOtp) {
           setDevOtp(response.devOtp);
         } else {
           setDevOtp(null);
