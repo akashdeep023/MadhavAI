@@ -7,6 +7,8 @@ export interface OTPResponse {
   expiresAt: Date;
   attemptsRemaining: number;
   message?: string;
+  devOtp?: string; // Returned by backend when SNS SMS is inactive
+  smsActive?: boolean; // false = SMS not sent, show OTP in-app
 }
 
 export interface AuthToken {

@@ -32,6 +32,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [loading, setLoading] = useState(false);
   const [attemptsRemaining, setAttemptsRemaining] = useState(3);
   const [timer, setTimer] = useState(0);
+  const [devOtp, setDevOtp] = useState<string | null>(null); // shown in-app when SMS is inactive
 
   // Start countdown timer for OTP expiration
   const startTimer = (expirationDate: Date) => {
@@ -62,7 +63,13 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
         setStep('otp');
         setAttemptsRemaining(response.attemptsRemaining);
         startTimer(response.expiresAt);
-        Alert.alert(t('auth.otpSent'), t('auth.checkSMS'));
+        // If SMS is inactive, show OTP in-app instead of "check SMS"
+        if (response.smsActive === false && response.devOtp) {
+          setDevOtp(response.devOtp);
+        } else {
+          setDevOtp(null);
+          Alert.alert(t('auth.otpSent'), t('auth.checkSMS'));
+        }
       } else {
         Alert.alert(t('common.error'), response.message || 'Failed to send OTP');
       }
@@ -175,6 +182,19 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
 
         <View style={styles.form}>
           <Text style={styles.label}>{t('auth.verifyOTP')}</Text>
+
+          {/* In-app OTP banner — shown when SNS SMS is not yet active */}
+          {devOtp && (
+            <View style={styles.devOtpBanner}>
+              <Text style={styles.devOtpTitle}>⚠️ SMS delivery temporarily unavailable</Text>
+              <Text style={styles.devOtpNote}>
+                SMS service is being set up. OTP is shown here temporarily.
+              </Text>
+              <Text style={styles.devOtpSubtitle}>Your one-time password:</Text>
+              <Text style={styles.devOtpCode}>{devOtp}</Text>
+            </View>
+          )}
+
           <TextInput
             style={styles.otpInput}
             placeholder="000000"
@@ -232,6 +252,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
               setStep('phone');
               setOtp('');
               setTimer(0);
+              setDevOtp(null);
             }}
           >
             <Text style={styles.backButtonText}>← {t('auth.changeNumber')}</Text>
@@ -388,5 +409,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#4CAF50',
     fontWeight: '500',
+  },
+  devOtpBanner: {
+    backgroundColor: '#FFF8E1',
+    borderWidth: 1,
+    borderColor: '#FFB300',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  devOtpTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#E65100',
+    marginBottom: 4,
+  },
+  devOtpSubtitle: {
+    fontSize: 13,
+    color: '#555',
+    marginBottom: 6,
+  },
+  devOtpCode: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#1B5E20',
+    letterSpacing: 8,
+    marginBottom: 6,
+  },
+  devOtpNote: {
+    fontSize: 11,
+    color: '#888',
+    textAlign: 'center',
   },
 });
