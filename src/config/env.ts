@@ -58,7 +58,10 @@ const configs: Record<Environment, EnvConfig> = {
     OTA_API_BASE_URL: getEnvVar('OTA_API_BASE_URL', 'https://staging-api.madhavai.app'),
   },
   production: {
-    API_BASE_URL: getEnvVar('API_BASE_URL', 'https://1s6y4bwfaf.execute-api.ap-south-1.amazonaws.com/production'),
+    API_BASE_URL: getEnvVar(
+      'API_BASE_URL',
+      'https://1s6y4bwfaf.execute-api.ap-south-1.amazonaws.com/production'
+    ),
     API_TIMEOUT: getEnvNumber('API_TIMEOUT', 30000),
     ENABLE_LOGGING: false,
     ENABLE_API: getEnvBoolean('ENABLE_API', true), // API available in production
